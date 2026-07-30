@@ -1,0 +1,33 @@
+src = ["src", "kits", "tests", "scripts"]
+target-version = "py311"
+line-length = 88
+
+[format]
+docstring-code-format = true
+
+[lint]
+ignore = [
+  "B009",
+  "E501", # the formatter wraps code; comments and URLs are left alone
+  "PLR0913"
+]
+select = [
+  "B", # flake8-bugbear
+  "C", # flake8-comprehensions
+  "E", # pycodestyle errors
+  "F", # pyflakes
+  "I", # isort
+  "N", # pep8-naming
+  "PL", # pylint
+  "Q", # flake8-quotes
+  "UP", # pyupgrade
+  "W" # pycodestyle warnings
+]
+
+[lint.isort]
+known-first-party = ["chanx_kit"]
+section-order = ["future", "standard-library", "django", "third-party", "first-party", "local-folder"]
+
+[lint.isort.sections]
+django = ["channels", "django", "rest_framework"]
+

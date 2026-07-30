@@ -1,0 +1,18 @@
+# Redis for the sandbox, so broadcasting can be seen working across processes.
+# The sandbox runs without it (in-memory channel layer), but then a worker or signal
+# publishing from a separate process cannot reach the browser.
+#
+#   docker compose up -d
+#   REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox
+#
+# Port 6399 to avoid colliding with a Redis you already run on 6379.
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6399:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

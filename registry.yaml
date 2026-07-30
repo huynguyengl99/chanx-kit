@@ -1,0 +1,27 @@
+version: 1
+name: chanx-kit
+title: ChanX Kit
+description: Composable, copy-in WebSocket components for chanx.
+source: github:huynguyengl99/chanx-kit
+homepage: https://github.com/huynguyengl99/chanx-kit
+
+ecosystem: python
+
+root: kits
+default_tier: contrib
+
+variants: [django, fastapi]
+
+tier_rules:
+  core: [core]
+  contrib: [core, contrib]
+
+install:
+  target: ws_kits
+  package_marker: __init__.py
+  exclude:
+    - "kit.yaml"
+    - "__pycache__/**"
+  optional:
+    tests:
+      - "tests/**"

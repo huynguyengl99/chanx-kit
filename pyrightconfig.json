@@ -1,0 +1,55 @@
+{
+  "include": [
+    "kits",
+    "scripts",
+    "tests",
+    "sandbox",
+    "src"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/node_modules",
+    ".venv"
+  ],
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.11",
+  "reportMissingTypeStubs": false,
+  "reportPrivateUsage": false,
+  "executionEnvironments": [
+    {
+      "root": "tests",
+      "extraPaths": [
+        ".",
+        "scripts"
+      ],
+      "reportUnknownVariableType": "none",
+      "reportUnknownMemberType": "none",
+      "reportUnknownArgumentType": "none",
+      "reportUnknownParameterType": "none",
+      "reportMissingImports": "none"
+    },
+    {
+      "root": "scripts",
+      "reportUnknownVariableType": "none",
+      "reportUnknownMemberType": "none",
+      "reportUnknownArgumentType": "none"
+    },
+    {
+      "root": "kits"
+    },
+    {
+      "root": "sandbox",
+      "extraPaths": [
+        "."
+      ],
+      "reportMissingImports": "none",
+      "reportUnknownVariableType": "none",
+      "reportUnknownMemberType": "none"
+    },
+    {
+      "root": "src"
+    }
+  ],
+  "reportUnusedFunction": false,
+  "reportUnnecessaryCast": false
+}

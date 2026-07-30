@@ -1,0 +1,57 @@
+default_language_version:
+  python: python3.11
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-toml
+      - id: check-json
+        exclude: ^sandbox/ui/tsconfig\.json$
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        exclude: ^(uv\.lock|sandbox/ui/package-lock\.json)$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.13 # keep in sync with the lint group in pyproject.toml, or CI and pre-commit disagree on formatting
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.2
+    hooks:
+      - id: toml-sort-fix
+        exclude: ^uv\.lock$ # identify types it as TOML, but uv owns its formatting
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.6.12
+    hooks:
+      - id: uv-lock
+
+  - repo: local
+    hooks:
+      - id: registry-index
+        name: copit-registry.json is current
+        entry: uv run --group registry python scripts/registry.py check
+        language: system
+        pass_filenames: false
+        files: ^(kits/|(registry\.yaml|copit-registry\.json)$|scripts/registry\.py$)
+
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+
+ci:
+  autofix_commit_msg: "style: auto fixes from pre-commit.com hooks"
+  autoupdate_commit_msg: "chore: pre-commit autoupdate"
+  autoupdate_schedule: quarterly
+  skip: [registry-index] # needs uv, which pre-commit.ci does not provide; CI runs it as its own job
