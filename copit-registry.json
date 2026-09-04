@@ -1,0 +1,307 @@
+{
+  "version": 1,
+  "name": "chanx-kit",
+  "title": "ChanX Kit",
+  "description": "Composable, copy-in WebSocket components for chanx.",
+  "source": "github:huynguyengl99/chanx-kit",
+  "homepage": "https://github.com/huynguyengl99/chanx-kit",
+  "ecosystem": "python",
+  "variants": [
+    "django",
+    "fastapi"
+  ],
+  "install": {
+    "target": "ws_kits",
+    "package_marker": "__init__.py",
+    "exclude": [
+      "kit.yaml",
+      "__pycache__/**"
+    ],
+    "optional": {
+      "tests": [
+        "tests/**"
+      ]
+    }
+  },
+  "components": {
+    "ag-ui": {
+      "name": "ag-ui",
+      "title": "AG-UI",
+      "description": "Serve the AG-UI agent-user interaction protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic: yield events from any agent.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/ag_ui",
+      "tags": [
+        "agent",
+        "ag-ui",
+        "protocol",
+        "streaming"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "chanx>=2.10.0,<3",
+        "ag-ui-protocol>=0.1.19"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "messages.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_ag_ui.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    },
+    "chanx-testing": {
+      "name": "chanx-testing",
+      "title": "Testing harness",
+      "description": "Backend-agnostic test harness for kit components: one suite runs against both Django Channels and FastAPI / fast-channels. Installed automatically by kits whose copied tests use it.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/chanx_testing",
+      "tags": [
+        "testing",
+        "pytest"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "chanx>=2.10.0,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py"
+      ],
+      "optional": {
+        "tests": [
+          "tests/__init__.py",
+          "tests/test_chanx_testing.py"
+        ]
+      }
+    },
+    "django-message-store": {
+      "name": "django-message-store",
+      "title": "Django message store",
+      "description": "Durable chat history in your Django database, with an admin and a read-only REST endpoint. Drop-in replacement for the room-chat kit's in-memory default.",
+      "tier": "contrib",
+      "version": "0.1.0",
+      "path": "kits/django_message_store",
+      "tags": [
+        "chat",
+        "django",
+        "orm",
+        "persistence",
+        "rest"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "room-chat"
+      ],
+      "dependencies": [
+        "chanx>=2.10.0,<3",
+        "django>=4.2",
+        "djangorestframework>=3.15"
+      ],
+      "variants": {},
+      "only_variants": [
+        "django"
+      ],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "admin.py",
+        "apps.py",
+        "migrations/0001_initial.py",
+        "migrations/__init__.py",
+        "models.py",
+        "serializers.py",
+        "store.py",
+        "urls.py",
+        "views.py"
+      ],
+      "optional": {
+        "tests": [
+          "tests/__init__.py",
+          "tests/test_django_message_store.py"
+        ]
+      }
+    },
+    "notification": {
+      "name": "notification",
+      "title": "Notification",
+      "description": "Fan out notifications to a user's live connections from anywhere in your app: a signal, a background worker, or another service.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/notification",
+      "tags": [
+        "notification",
+        "fanout",
+        "broadcast"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "chanx>=2.10.0,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "messages.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_notification.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    },
+    "presence": {
+      "name": "presence",
+      "title": "Presence",
+      "description": "Track who is present in a room, document or tenant, and tell everyone when that changes. Pluggable store; ships with an in-process default.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/presence",
+      "tags": [
+        "presence",
+        "roster",
+        "online"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "chanx>=2.10.0,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "messages.py",
+        "store.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_presence.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    },
+    "redis-presence-store": {
+      "name": "redis-presence-store",
+      "title": "Redis presence store",
+      "description": "Shared presence roster backed by Redis, so presence stays correct across multiple workers. Drop-in replacement for the presence kit's in-memory default.",
+      "tier": "contrib",
+      "version": "0.1.0",
+      "path": "kits/redis_presence_store",
+      "tags": [
+        "presence",
+        "redis",
+        "scaling"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "presence"
+      ],
+      "dependencies": [
+        "chanx>=2.10.0,<3",
+        "redis>=5"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "store.py"
+      ],
+      "optional": {
+        "tests": [
+          "tests/__init__.py",
+          "tests/test_redis_presence_store.py"
+        ]
+      }
+    },
+    "room-chat": {
+      "name": "room-chat",
+      "title": "Room chat",
+      "description": "A chat room: history replayed on connect, plus a live roster from the presence kit. Pluggable store, with an in-process default for demos and tests.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/room_chat",
+      "tags": [
+        "chat",
+        "rooms",
+        "history",
+        "persistence"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "presence"
+      ],
+      "dependencies": [
+        "chanx>=2.10.0,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "messages.py",
+        "store.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_room_chat.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    }
+  }
+}

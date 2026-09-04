@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://huynguyengl99.github.io/copit/registry.schema.json",
+  "title": "copit registry index",
+  "description": "Generated index a registry publishes as copit-registry.json. See https://huynguyengl99.github.io/copit/registry/",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "components"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Index format version. copit refuses versions it does not understand.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "name": {
+      "description": "Registry id, used as @name/component.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "source": {
+      "description": "Where the registry says it lives, e.g. github:owner/repo. Informational only: copit fetches components from the source the user configured, at the ref they pinned.",
+      "type": "string",
+      "minLength": 1
+    },
+    "homepage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ecosystem": {
+      "description": "Selects the package manager. Unknown values simply disable installing.",
+      "type": "string"
+    },
+    "variants": {
+      "description": "Names a component may specialise on, e.g. target frameworks.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "install": {
+      "$ref": "#/$defs/install"
+    },
+    "components": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/componentId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/component"
+      }
+    }
+  },
+  "$defs": {
+    "componentId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "description": "Lowercase id without '/', unique across the registry."
+    },
+    "fileList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "packageList": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "install": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "description": "Directory this registry suggests for its components. Recorded into registries.<name>.target by `copit registry add`; must be relative and inside the project.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "package_marker": {
+          "description": "File created in every directory copit creates, for languages that need one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exclude": {
+          "description": "Generator-side default: glob patterns the registry never publishes. copit copies exactly what each component lists in `files`, so this is not applied at install time.",
+          "$ref": "#/$defs/fileList"
+        },
+        "optional": {
+          "description": "Generator-side default for named optional groups. copit copies only what each component materialises into its own `optional` map.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/optionalGroup"
+          }
+        }
+      }
+    },
+    "optionalGroup": {
+      "description": "One named group, as a bare file list or as an object that also declares what those files need. `requires` and `dependencies` apply only when the group is selected with --with.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/fileList"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "include": {
+              "description": "Files copied when the group is selected.",
+              "$ref": "#/$defs/fileList"
+            },
+            "requires": {
+              "description": "Other components in this registry, resolved only when the group is selected.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/componentId"
+              },
+              "uniqueItems": true
+            },
+            "dependencies": {
+              "description": "Packages needed only when the group is selected.",
+              "$ref": "#/$defs/packageList"
+            }
+          }
+        }
+      ]
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dependencies": {
+          "$ref": "#/$defs/packageList"
+        },
+        "include": {
+          "description": "Files copied only when this variant is selected.",
+          "$ref": "#/$defs/fileList"
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "required": [
+        "name",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/componentId"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tier": {
+          "description": "Free-form label such as core or contrib. copit treats it as opaque.",
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "path": {
+          "description": "Directory within the registry repository. Its basename becomes the installed directory name.",
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires": {
+          "description": "Other components in this registry, resolved transitively. Must be acyclic.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/componentId"
+          },
+          "uniqueItems": true
+        },
+        "dependencies": {
+          "$ref": "#/$defs/packageList"
+        },
+        "variants": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/variant"
+          }
+        },
+        "only_variants": {
+          "description": "Variants this component requires; empty installs anywhere. Unlike `variants`, which only adds files, this refuses the install when none is selected. Every name must appear in the registry's `variants`.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "files": {
+          "description": "Exactly what a normal install copies, excludes already applied.",
+          "$ref": "#/$defs/fileList"
+        },
+        "optional": {
+          "description": "Named groups installed only when requested with --with.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/optionalGroup"
+          }
+        }
+      }
+    }
+  }
+}
