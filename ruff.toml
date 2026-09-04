@@ -31,3 +31,8 @@ section-order = ["future", "standard-library", "django", "third-party", "first-p
 [lint.isort.sections]
 django = ["channels", "django", "rest_framework"]
 
+[lint.per-file-ignores]
+"**/tests/**" = ["N806", "PLR2004"]
+"scripts/registry.py" = ["C901"] # one linear validation pass reads better than five helpers
+"scripts/gen_ts_client.py" = ["C901", "PLR0911"] # a JSON-schema dispatch is a flat list of cases
+"docs/gen_pages.py" = ["PLR0911"] # same: one branch per schema shape
