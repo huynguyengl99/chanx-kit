@@ -1,0 +1,17 @@
+name: notification
+title: Notification
+description: >-
+  Fan out notifications to a user's live connections from anywhere in your app:
+  a signal, a background worker, or another service.
+version: 0.1.0
+tier: core
+tags: [notification, fanout, broadcast]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+dependencies:
+  - "chanx>=2.10.0,<3"
+
+optional:
+  tests:
+    requires:
+      - chanx-testing  # the copied tests import the harness

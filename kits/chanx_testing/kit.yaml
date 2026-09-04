@@ -1,0 +1,13 @@
+name: chanx-testing
+title: Testing harness
+description: >-
+  Backend-agnostic test harness for kit components: one suite runs against both
+  Django Channels and FastAPI / fast-channels. Installed automatically by kits whose
+  copied tests use it.
+version: 0.1.0
+tier: core
+tags: [testing, pytest]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+dependencies:
+  - "chanx>=2.10.0,<3"

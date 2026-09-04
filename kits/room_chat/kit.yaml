@@ -1,0 +1,20 @@
+name: room-chat
+title: Room chat
+description: >-
+  A chat room: history replayed on connect, plus a live roster from the presence
+  kit. Pluggable store, with an in-process default for demos and tests.
+version: 0.1.0
+tier: core
+tags: [chat, rooms, history, persistence]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - presence
+
+dependencies:
+  - "chanx>=2.10.0,<3"
+
+optional:
+  tests:
+    requires:
+      - chanx-testing  # the copied tests import the harness

@@ -1,0 +1,17 @@
+name: presence
+title: Presence
+description: >-
+  Track who is present in a room, document or tenant, and tell everyone when that
+  changes. Pluggable store; ships with an in-process default.
+version: 0.1.0
+tier: core
+tags: [presence, roster, online]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+dependencies:
+  - "chanx>=2.10.0,<3"
+
+optional:
+  tests:
+    requires:
+      - chanx-testing  # the copied tests import the harness

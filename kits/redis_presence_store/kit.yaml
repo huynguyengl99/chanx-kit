@@ -1,0 +1,16 @@
+name: redis-presence-store
+title: Redis presence store
+description: >-
+  Shared presence roster backed by Redis, so presence stays correct across multiple
+  workers. Drop-in replacement for the presence kit's in-memory default.
+version: 0.1.0
+tier: contrib
+tags: [presence, redis, scaling]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - presence
+
+dependencies:
+  - "chanx>=2.10.0,<3"
+  - "redis>=5"

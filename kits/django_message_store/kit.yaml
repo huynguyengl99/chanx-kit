@@ -1,0 +1,20 @@
+name: django-message-store
+title: Django message store
+description: >-
+  Durable chat history in your Django database, with an admin and a read-only REST
+  endpoint. Drop-in replacement for the room-chat kit's in-memory default.
+version: 0.1.0
+tier: contrib
+tags: [chat, django, orm, persistence, rest]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+only_variants:
+  - django
+
+requires:
+  - room-chat
+
+dependencies:
+  - "chanx>=2.10.0,<3"
+  - "django>=4.2"
+  - "djangorestframework>=3.15"
