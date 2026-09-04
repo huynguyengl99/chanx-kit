@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ChanX Kit sandbox</title>
+<style>
+  body { font: 15px/1.6 ui-sans-serif, system-ui, sans-serif; max-width: 46rem; margin: 4rem auto; padding: 0 1.5rem; color: #1c1c1f; }
+  code { background: #f2f2f4; padding: .15em .4em; border-radius: 4px; }
+  pre { background: #f2f2f4; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+  a { color: #2f6feb; }
+</style>
+<h1>ChanX Kit sandbox</h1>
+<p>The backend is running. The demo UI has not been built yet.</p>
+<pre>cd sandbox/ui
+pnpm install
+pnpm gen        # generate TS types from /asyncapi.json
+pnpm build      # or: pnpm dev</pre>
+<p>Meanwhile: <a href="/asyncapi">AsyncAPI docs</a> · <a href="/asyncapi.json">asyncapi.json</a></p>
+<h2>WebSocket endpoints</h2>
+<ul>
+  <li><code>/ws/notifications?as=demo</code> — notification kit</li>
+  <li><code>/ws/rooms/{room}?as=ana</code> — room-chat + presence</li>
+  <li><code>/ws/agent</code> — ag-ui</li>
+</ul>

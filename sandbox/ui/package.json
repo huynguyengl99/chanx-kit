@@ -1,0 +1,23 @@
+{
+  "name": "chanx-kit-sandbox-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "cd ../.. && uv run --extra fastapi --group dev-fastapi python scripts/gen_ts_client.py --app sandbox.main:app -o sandbox/ui/src/generated",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
