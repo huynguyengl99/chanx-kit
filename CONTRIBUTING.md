@@ -77,10 +77,14 @@ authors: ["Your Name <you@example.com>"]
 
 requires:
   - presence
-  - chanx-testing
 
 dependencies:
-  - "chanx>=2,<3"
+  - "chanx>=2.10.0,<3"
+
+optional:
+  tests:
+    requires:
+      - chanx-testing
 ```
 
 - **name**: the registry id, in dashes. The directory must be
@@ -93,8 +97,13 @@ dependencies:
   other `core` kits, which is what keeps the maintained core self-contained.
 - **tags**, **authors**: metadata only.
 - **requires**: other kits in this registry, resolved transitively at install time and
-  checked for cycles. List `chanx-testing` when your copied tests use the harness.
+  checked for cycles. This applies to every install, so only list what the kit itself
+  imports.
 - **dependencies**: real packages, installed by the user's package manager.
+- **optional**: what a file group needs in order to work, resolved only when someone
+  installs with `--with <group>`. The `tests` group is where `chanx-testing` belongs,
+  since a user who did not ask for tests should not get a test harness. Which files the
+  group contains is decided by `registry.yaml`, not here.
 - **only_variants**: the frameworks the kit needs. Omit it unless the kit truly cannot
   run on both; see below.
 
@@ -157,7 +166,8 @@ CHANX_KIT_BACKEND=channels uv run --no-default-groups \
 uv run python scripts/conformance.py    # install every kit with copit and import it
 ```
 
-Registry support is unreleased in copit; to check against a local build:
+Conformance needs copit 0.6 or newer, which `uv sync` installs. To check against a local
+copit build instead:
 `COPIT=../copit/target/release/copit uv run python scripts/conformance.py`. Or run the
 whole matrix with `tox`.
 
