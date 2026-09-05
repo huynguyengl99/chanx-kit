@@ -3,7 +3,7 @@
 A collection of best-practice, reusable WebSocket components.
 
 [![CI](https://github.com/huynguyengl99/chanx-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/huynguyengl99/chanx-kit/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-blue)](https://github.com/huynguyengl99/chanx-kit)
+[![Python](https://img.shields.io/badge/python-3.11%20to%203.14-blue)](https://github.com/huynguyengl99/chanx-kit)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **[Documentation](https://huynguyengl99.github.io/chanx-kit/)** ·

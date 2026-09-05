@@ -139,7 +139,7 @@ implementation of its store protocol.
 ## Before you open a PR
 
 Run the hooks, both backends, the type checker and the registry checks. CI runs the same
-things, one framework at a time and across Python 3.11 to 3.13.
+things, one framework at a time and across Python 3.11 to 3.14.
 
 ```bash
 uv run pre-commit run --all-files
