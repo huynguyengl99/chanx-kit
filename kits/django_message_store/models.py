@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from django.db import models
@@ -9,7 +11,6 @@ class ChatEntryRecord(models.Model):
     """One chat message, as stored. ``ChatEntry`` stays the wire contract, so a schema
     change here cannot alter what clients receive."""
 
-    # Field annotations satisfy pyright, which runs without a Django plugin.
     entry_id: models.CharField[str, str] = models.CharField(max_length=32, unique=True)
     room: models.CharField[str, str] = models.CharField(max_length=255)
     author_id: models.CharField[str, str] = models.CharField(max_length=255)
@@ -28,7 +29,7 @@ class ChatEntryRecord(models.Model):
         return f"{self.room}: {self.body[:40]}"
 
     @classmethod
-    def from_entry(cls, entry: ChatEntry) -> "ChatEntryRecord":
+    def from_entry(cls, entry: ChatEntry) -> ChatEntryRecord:
         return cls(
             entry_id=entry.id,
             room=entry.room,
