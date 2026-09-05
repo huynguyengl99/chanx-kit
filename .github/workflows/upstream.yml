@@ -1,0 +1,54 @@
+name: Upstream
+
+# chanx-kit is built on chanx, and kits are copied into user projects — so a
+# breaking change upstream reaches people through *their* next `pip install`, not
+# through a release here. Re-resolving every dependency to its newest version on a
+# schedule surfaces that before a user does.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  latest-dependencies:
+    name: ${{ matrix.backend }} against latest deps
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [fastapi, django]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Re-resolve every dependency to its newest version
+        run: uv lock --upgrade
+
+      - name: Show what chanx resolved to
+        run: |
+          uv run --no-default-groups --extra ${{ matrix.backend }} \
+            python -c "import chanx; print('chanx', chanx.__version__)"
+        continue-on-error: true
+
+      - name: Run kit tests
+        run: |
+          uv run --no-default-groups \
+                 --extra ${{ matrix.backend }} \
+                 --group dev-${{ matrix.backend }} --group registry \
+                 pytest kits tests -q
+        env:
+          CHANX_KIT_BACKEND: ${{ matrix.backend == 'django' && 'channels' || 'fast_channels' }}
+
+      # The wire contract is frozen by the committed TypeScript types; regenerating them
+      # here catches a dependency upgrade that changes schema emission.
+      - name: Check the wire contract still matches
+        if: matrix.backend == 'fastapi'
+        run: |
+          uv run python scripts/gen_ts_client.py --app sandbox.main:app \
+            -o sandbox/ui/src/generated
+          git diff --exit-code sandbox/ui/src/generated

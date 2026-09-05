@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  pre-commit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # Local hooks shell out to uv, which this job lacks; other jobs run them.
+      - uses: pre-commit/action@v3.0.1
+        env:
+          SKIP: registry-index,kit-contracts
+
+  registry:
+    name: Validate registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - name: Check registry metadata and index freshness
+        run: uv run python scripts/registry.py check
+
+  test:
+    name: ${{ matrix.backend }} / py${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+        backend: [fastapi, django]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python }}
+
+      # --no-default-groups is load-bearing: the defaults install both frameworks,
+      # so a kit secretly importing the other one would still pass this cell.
+      - name: Run kit tests
+        run: |
+          uv run --no-default-groups \
+                 --extra ${{ matrix.backend }} \
+                 --group dev-${{ matrix.backend }} --group registry \
+                 pytest kits tests -q
+        env:
+          CHANX_KIT_BACKEND: ${{ matrix.backend == 'django' && 'channels' || 'fast_channels' }}
+
+  conformance:
+    name: Install conformance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - name: Install every kit and import it
+        run: uv run python scripts/conformance.py
+
+  ui:
+    name: Demo UI types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: sandbox/ui/package-lock.json
+      - name: Generate TypeScript types from the sandbox AsyncAPI schema
+        run: |
+          uv run python scripts/gen_ts_client.py \
+            --app sandbox.main:app -o sandbox/ui/src/generated
+      - run: git diff --exit-code sandbox/ui/src/generated
+      - run: npm ci --prefix sandbox/ui
+      - run: npm run --prefix sandbox/ui typecheck
+
+  docs:
+    name: Docs build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - name: Build documentation
+        run: uv run mkdocs build --strict
+        env:
+          DISABLE_MKDOCS_2_WARNING: "true"
+
+  lint:
+    name: Lint and type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - name: Install
+        run: uv sync
+      - run: uv run ruff check src kits scripts tests sandbox docs
+      - run: uv run ruff format --check src kits scripts tests sandbox docs
+      - run: uv run pyright
