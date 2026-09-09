@@ -3,24 +3,29 @@
 
 /** Event containing a JSON Patch delta for an activity message. */
 export interface ActivityDeltaEvent {
+  metadata?: Record<string, unknown> | null;
   type: "ACTIVITY_DELTA";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
   activityType: string;
   patch: unknown[];
+  subagentRunId?: string | null;
 }
 
 /** An activity progress message emitted between chat messages. */
 export interface ActivityMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "activity";
   activityType: string;
   content: Record<string, unknown>;
+  subagentRunId?: string | null;
 }
 
 /** Event containing a snapshot of an activity message. */
 export interface ActivitySnapshotEvent {
+  metadata?: Record<string, unknown> | null;
   type: "ACTIVITY_SNAPSHOT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -28,12 +33,13 @@ export interface ActivitySnapshotEvent {
   activityType: string;
   content: unknown;
   replace?: boolean;
+  subagentRunId?: string | null;
 }
 
 /** One AG-UI event on its way to the client, as the protocol's ``Event`` union. */
 export interface AgUiEventMessage {
   action: "ag_ui_event";
-  payload: TextMessageStartEvent | TextMessageContentEvent | TextMessageEndEvent | TextMessageChunkEvent | ThinkingTextMessageStartEvent | ThinkingTextMessageContentEvent | ThinkingTextMessageEndEvent | ToolCallStartEvent | ToolCallArgsEvent | ToolCallEndEvent | ToolCallChunkEvent | ToolCallResultEvent | ThinkingStartEvent | ThinkingEndEvent | StateSnapshotEvent | StateDeltaEvent | MessagesSnapshotEvent | ActivitySnapshotEvent | ActivityDeltaEvent | RawEvent | CustomEvent | RunStartedEvent | RunFinishedEvent | RunErrorEvent | StepStartedEvent | StepFinishedEvent | ReasoningStartEvent | ReasoningMessageStartEvent | ReasoningMessageContentEvent | ReasoningMessageEndEvent | ReasoningMessageChunkEvent | ReasoningEndEvent | ReasoningEncryptedValueEvent;
+  payload: TextMessageStartEvent | TextMessageContentEvent | TextMessageEndEvent | TextMessageChunkEvent | ThinkingTextMessageStartEvent | ThinkingTextMessageContentEvent | ThinkingTextMessageEndEvent | ToolCallStartEvent | ToolCallArgsEvent | ToolCallEndEvent | ToolCallChunkEvent | ToolCallResultEvent | ThinkingStartEvent | ThinkingEndEvent | StateSnapshotEvent | StateDeltaEvent | MessagesSnapshotEvent | ActivitySnapshotEvent | ActivityDeltaEvent | RawEvent | CustomEvent | RunStartedEvent | RunFinishedEvent | RunErrorEvent | StepStartedEvent | StepFinishedEvent | ReasoningStartEvent | ReasoningMessageStartEvent | ReasoningMessageContentEvent | ReasoningMessageEndEvent | ReasoningMessageChunkEvent | ReasoningEndEvent | ReasoningEncryptedValueEvent | SubagentStartedEvent | SubagentFinishedEvent | SubagentErrorEvent;
 }
 
 /** Client asks the agent to run; the payload is AG-UI's own ``RunAgentInput``. */
@@ -44,11 +50,13 @@ export interface AgUiRunMessage {
 
 /** An assistant message. */
 export interface AssistantMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "assistant";
   content?: string | null;
   name?: string | null;
   encryptedValue?: string | null;
+  subagentRunId?: string | null;
   toolCalls?: ToolCall[] | null;
 }
 
@@ -128,20 +136,24 @@ export interface Context {
 
 /** Event containing a custom event. */
 export interface CustomEvent {
+  metadata?: Record<string, unknown> | null;
   type: "CUSTOM";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   name: string;
   value: unknown;
+  subagentRunId?: string | null;
 }
 
 /** A developer message. */
 export interface DeveloperMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "developer";
   content: string;
   name?: string | null;
   encryptedValue?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** A document input content fragment. */
@@ -187,10 +199,12 @@ export interface Interrupt {
   responseSchema?: Record<string, unknown> | null;
   expiresAt?: string | null;
   metadata?: Record<string, unknown> | null;
+  subagentRunId?: string | null;
 }
 
 /** Event containing a snapshot of the messages. */
 export interface MessagesSnapshotEvent {
+  metadata?: Record<string, unknown> | null;
   type: "MESSAGES_SNAPSHOT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -285,84 +299,103 @@ export interface PresenceStatePayload {
 
 /** Event containing a raw event. */
 export interface RawEvent {
+  metadata?: Record<string, unknown> | null;
   type: "RAW";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   event: unknown;
   source?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** Event containing an encrypted value for a message or tool call. */
 export interface ReasoningEncryptedValueEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_ENCRYPTED_VALUE";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   subtype: "tool-call" | "message";
   entityId: string;
   encryptedValue: string;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the end of a reasoning phase. */
 export interface ReasoningEndEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_END";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
+  subagentRunId?: string | null;
 }
 
 /** A reasoning message containing the agent's internal reasoning process. */
 export interface ReasoningMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "reasoning";
   content: string;
   encryptedValue?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** Event containing a chunk of reasoning message content. */
 export interface ReasoningMessageChunkEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_MESSAGE_CHUNK";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId?: string | null;
   delta?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** Event containing a piece of reasoning message content. */
 export interface ReasoningMessageContentEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_MESSAGE_CONTENT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
   delta: string;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the end of a reasoning message. */
 export interface ReasoningMessageEndEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_MESSAGE_END";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the start of a reasoning message. */
 export interface ReasoningMessageStartEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_MESSAGE_START";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
   role: "reasoning";
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the start of a reasoning phase. */
 export interface ReasoningStartEvent {
+  metadata?: Record<string, unknown> | null;
   type: "REASONING_START";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
+  subagentRunId?: string | null;
 }
 
-/** A per-interrupt response in the resume array of a RunAgentInput. */
+/** A per-interrupt response in the resume array of a RunAgentInput. ``metadata`` carries envelope data about the response — signatures, routing keys — as opposed to ``payload``, which is the answer the agent asked for and will act on. */
 export interface ResumeEntry {
+  metadata?: Record<string, unknown> | null;
   interruptId: string;
   status: "resolved" | "cancelled";
   payload?: unknown | null;
@@ -373,7 +406,7 @@ export interface RunAgentInput {
   threadId: string;
   runId: string;
   parentRunId?: string | null;
-  state: unknown;
+  state?: unknown;
   messages: (DeveloperMessage | SystemMessage | AssistantMessage | UserMessage | ToolMessage | ActivityMessage | ReasoningMessage)[];
   tools: Tool[];
   context: Context[];
@@ -383,15 +416,18 @@ export interface RunAgentInput {
 
 /** Event indicating that a run has encountered an error. */
 export interface RunErrorEvent {
+  metadata?: Record<string, unknown> | null;
   type: "RUN_ERROR";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   message: string;
   code?: string | null;
+  usage?: TokenUsage[] | null;
 }
 
 /** Event indicating that a run has finished. `outcome` is optional. Producers written before the interrupt-aware run lifecycle simply omit it (legacy back-compat). Newer producers set it explicitly to ``RunFinishedSuccessOutcome`` (``{"type": "success"}``) or ``RunFinishedInterruptOutcome`` (``{"type": "interrupt", "interrupts": [...]}``). The interrupt list lives inside the outcome so it travels with the variant that uses it. */
 export interface RunFinishedEvent {
+  metadata?: Record<string, unknown> | null;
   type: "RUN_FINISHED";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -399,6 +435,7 @@ export interface RunFinishedEvent {
   runId: string;
   result?: unknown | null;
   outcome?: RunFinishedSuccessOutcome | RunFinishedInterruptOutcome | null;
+  usage?: TokenUsage[] | null;
 }
 
 /** Outcome variant signalling that a run paused on one or more interrupts. */
@@ -414,6 +451,7 @@ export interface RunFinishedSuccessOutcome {
 
 /** Event indicating that a run has started. */
 export interface RunStartedEvent {
+  metadata?: Record<string, unknown> | null;
   type: "RUN_STARTED";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -425,43 +463,100 @@ export interface RunStartedEvent {
 
 /** Event containing a delta of the state. */
 export interface StateDeltaEvent {
+  metadata?: Record<string, unknown> | null;
   type: "STATE_DELTA";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   delta: unknown[];
+  subagentRunId?: string | null;
 }
 
 /** Event containing a snapshot of the state. */
 export interface StateSnapshotEvent {
+  metadata?: Record<string, unknown> | null;
   type: "STATE_SNAPSHOT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   snapshot: unknown;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating that a step has finished. */
 export interface StepFinishedEvent {
+  metadata?: Record<string, unknown> | null;
   type: "STEP_FINISHED";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   stepName: string;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating that a step has started. */
 export interface StepStartedEvent {
+  metadata?: Record<string, unknown> | null;
   type: "STEP_STARTED";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   stepName: string;
+  subagentRunId?: string | null;
+}
+
+/** Event indicating a subagent has errored (independent of the run). */
+export interface SubagentErrorEvent {
+  metadata?: Record<string, unknown> | null;
+  type: "SUBAGENT_ERROR";
+  timestamp?: number | null;
+  rawEvent?: unknown | null;
+  subagentRunId: string;
+  message: string;
+  code?: string | null;
+}
+
+/** Event indicating a subagent has finished. */
+export interface SubagentFinishedEvent {
+  metadata?: Record<string, unknown> | null;
+  type: "SUBAGENT_FINISHED";
+  timestamp?: number | null;
+  rawEvent?: unknown | null;
+  subagentRunId: string;
+  result?: unknown | null;
+  outcome?: SubagentFinishedSuccessOutcome | SubagentFinishedSuspendedOutcome | null;
+}
+
+/** Outcome variant signalling that a subagent completed its work. */
+export interface SubagentFinishedSuccessOutcome {
+  type: "success";
+}
+
+/** Outcome variant signalling that a subagent is paused awaiting outside input. The subagent's stream segment closes for THIS run (the run itself ends with an interrupt outcome); on resume the same ``subagent_run_id`` is re-announced as a continuation of the suspended invocation. ``interrupt_ids`` names the run-level interrupts this subagent directly owns — it MAY be empty or omitted for an ancestor suspended because a descendant interrupted. */
+export interface SubagentFinishedSuspendedOutcome {
+  type: "suspended";
+  interruptIds?: string[] | null;
+}
+
+/** Event indicating a subagent has started within the run. */
+export interface SubagentStartedEvent {
+  metadata?: Record<string, unknown> | null;
+  type: "SUBAGENT_STARTED";
+  timestamp?: number | null;
+  rawEvent?: unknown | null;
+  subagentRunId: string;
+  name: string;
+  description?: string | null;
+  parentSubagentRunId?: string | null;
+  parentToolCallId?: string | null;
+  parentMessageId?: string | null;
 }
 
 /** A system message. */
 export interface SystemMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "system";
   content: string;
   name?: string | null;
   encryptedValue?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** A text fragment in a multimodal user message. */
@@ -472,6 +567,7 @@ export interface TextInputContent {
 
 /** Event containing a chunk of text message content. */
 export interface TextMessageChunkEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TEXT_MESSAGE_CHUNK";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -479,37 +575,45 @@ export interface TextMessageChunkEvent {
   role?: "developer" | "system" | "assistant" | "user" | null;
   delta?: string | null;
   name?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** Event containing a piece of text message content. */
 export interface TextMessageContentEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TEXT_MESSAGE_CONTENT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
   delta: string;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the end of a text message. */
 export interface TextMessageEndEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TEXT_MESSAGE_END";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the start of a text message. */
 export interface TextMessageStartEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TEXT_MESSAGE_START";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   messageId: string;
   role?: "developer" | "system" | "assistant" | "user";
   name?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the end of a thinking step event. */
 export interface ThinkingEndEvent {
+  metadata?: Record<string, unknown> | null;
   type: "THINKING_END";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -517,6 +621,7 @@ export interface ThinkingEndEvent {
 
 /** Event indicating the start of a thinking step event. */
 export interface ThinkingStartEvent {
+  metadata?: Record<string, unknown> | null;
   type: "THINKING_START";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -525,6 +630,7 @@ export interface ThinkingStartEvent {
 
 /** Event indicating a piece of a thinking text message. */
 export interface ThinkingTextMessageContentEvent {
+  metadata?: Record<string, unknown> | null;
   type: "THINKING_TEXT_MESSAGE_CONTENT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -533,6 +639,7 @@ export interface ThinkingTextMessageContentEvent {
 
 /** Event indicating the end of a thinking text message. */
 export interface ThinkingTextMessageEndEvent {
+  metadata?: Record<string, unknown> | null;
   type: "THINKING_TEXT_MESSAGE_END";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -540,9 +647,21 @@ export interface ThinkingTextMessageEndEvent {
 
 /** Event indicating the start of a thinking text message. */
 export interface ThinkingTextMessageStartEvent {
+  metadata?: Record<string, unknown> | null;
   type: "THINKING_TEXT_MESSAGE_START";
   timestamp?: number | null;
   rawEvent?: unknown | null;
+}
+
+/** Numeric-only, per-(provider, model) token usage summary. Deliberately carries no content-bearing or identifying fields (no prompts, completions, messages, thread/run/user IDs) — only provider/model labels and numeric token counts. */
+export interface TokenUsage {
+  provider?: string | null;
+  model?: string | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
+  reasoningTokens?: number | null;
+  cachedInputTokens?: number | null;
 }
 
 /** A tool definition. */
@@ -552,8 +671,9 @@ export interface Tool {
   parameters?: unknown | null;
 }
 
-/** A tool call, modelled after OpenAI tool calls. */
+/** A tool call, modelled after OpenAI tool calls. Carries its own metadata rather than folding into the assistant message that owns it: several tool calls can share one parent, so merging them all into it would make the result depend on their relative order. */
 export interface ToolCall {
+  metadata?: Record<string, unknown> | null;
   id: string;
   type: "function";
   function: FunctionCall;
@@ -562,15 +682,18 @@ export interface ToolCall {
 
 /** Event containing tool call arguments. */
 export interface ToolCallArgsEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TOOL_CALL_ARGS";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   toolCallId: string;
   delta: string;
+  subagentRunId?: string | null;
 }
 
 /** Event containing a chunk of tool call content. */
 export interface ToolCallChunkEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TOOL_CALL_CHUNK";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -578,18 +701,22 @@ export interface ToolCallChunkEvent {
   toolCallName?: string | null;
   parentMessageId?: string | null;
   delta?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the end of a tool call. */
 export interface ToolCallEndEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TOOL_CALL_END";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   toolCallId: string;
+  subagentRunId?: string | null;
 }
 
 /** Event containing the result of a tool call. */
 export interface ToolCallResultEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TOOL_CALL_RESULT";
   timestamp?: number | null;
   rawEvent?: unknown | null;
@@ -597,35 +724,42 @@ export interface ToolCallResultEvent {
   toolCallId: string;
   content: string;
   role?: "tool" | null;
+  subagentRunId?: string | null;
 }
 
 /** Event indicating the start of a tool call. */
 export interface ToolCallStartEvent {
+  metadata?: Record<string, unknown> | null;
   type: "TOOL_CALL_START";
   timestamp?: number | null;
   rawEvent?: unknown | null;
   toolCallId: string;
   toolCallName: string;
   parentMessageId?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** A tool result message. */
 export interface ToolMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "tool";
   content: string;
   toolCallId: string;
   error?: string | null;
   encryptedValue?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** A user message supporting text or multimodal content. */
 export interface UserMessage {
+  metadata?: Record<string, unknown> | null;
   id: string;
   role: "user";
   content: string | (TextInputContent | ImageInputContent | AudioInputContent | VideoInputContent | DocumentInputContent | BinaryInputContent)[];
   name?: string | null;
   encryptedValue?: string | null;
+  subagentRunId?: string | null;
 }
 
 /** A video input content fragment. */

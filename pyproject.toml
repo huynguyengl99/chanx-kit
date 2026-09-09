@@ -4,7 +4,7 @@ requires = ["hatchling"]
 
 [dependency-groups]
 dev = [
-  "ag-ui-protocol>=0.1.19",
+  "ag-ui-protocol>=0.1.22",
   "fakeredis>=2.26",
   "pydantic-ai-slim>=1.0",
   "pytest-asyncio>=1.2.0",
