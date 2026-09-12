@@ -186,12 +186,18 @@ def test_registry_json_parses_as_the_documented_shape() -> None:
     assert set(document["components"]) == {
         "ag-ui",
         "chanx-testing",
+        "conversation-store",
         "django-message-store",
         "notification",
         "presence",
+        "pydantic-ai-ag-ui",
         "redis-presence-store",
         "room-chat",
     }
+    assert document["components"]["pydantic-ai-ag-ui"]["requires"] == [
+        "ag-ui",
+        "conversation-store",
+    ]
     assert document["components"]["redis-presence-store"]["requires"] == ["presence"]
     assert document["components"]["room-chat"]["requires"] == ["presence"]
     # Published so copit can refuse the install; without it the kit's models would land

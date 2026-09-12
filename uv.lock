@@ -430,7 +430,7 @@ fastapi = [
 dev = [
     { name = "ag-ui-protocol" },
     { name = "fakeredis" },
-    { name = "pydantic-ai-slim" },
+    { name = "pydantic-ai-slim", extra = ["ag-ui"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -445,7 +445,7 @@ dev-django = [
     { name = "djangorestframework" },
     { name = "djangorestframework-stubs" },
     { name = "fakeredis" },
-    { name = "pydantic-ai-slim" },
+    { name = "pydantic-ai-slim", extra = ["ag-ui"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -459,7 +459,7 @@ dev-fastapi = [
     { name = "fakeredis" },
     { name = "fast-channels", extra = ["redis"] },
     { name = "httpx" },
-    { name = "pydantic-ai-slim" },
+    { name = "pydantic-ai-slim", extra = ["ag-ui"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -514,7 +514,7 @@ provides-extras = ["django", "fastapi"]
 dev = [
     { name = "ag-ui-protocol", specifier = ">=0.1.22" },
     { name = "fakeredis", specifier = ">=2.26" },
-    { name = "pydantic-ai-slim", specifier = ">=1.0" },
+    { name = "pydantic-ai-slim", extras = ["ag-ui"], specifier = ">=2.13" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-cov", specifier = ">=6.1.1,<7" },
@@ -529,7 +529,7 @@ dev-django = [
     { name = "djangorestframework", specifier = ">=3.15" },
     { name = "djangorestframework-stubs", specifier = ">=3.15" },
     { name = "fakeredis", specifier = ">=2.26" },
-    { name = "pydantic-ai-slim", specifier = ">=1.0" },
+    { name = "pydantic-ai-slim", extras = ["ag-ui"], specifier = ">=2.13" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-cov", specifier = ">=6.1.1,<7" },
@@ -543,7 +543,7 @@ dev-fastapi = [
     { name = "fakeredis", specifier = ">=2.26" },
     { name = "fast-channels", extras = ["redis"], specifier = ">=1.0.2" },
     { name = "httpx", specifier = ">=0.27.0,<1" },
-    { name = "pydantic-ai-slim", specifier = ">=1.0" },
+    { name = "pydantic-ai-slim", extras = ["ag-ui"], specifier = ">=2.13" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-cov", specifier = ">=6.1.1,<7" },
@@ -1872,6 +1872,12 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6e/c0/c699651a74cac2ac5e4bf19f568edf75fae529e456e2fee00ce94fe18f99/pydantic_ai_slim-2.21.0.tar.gz", hash = "sha256:dbcd6566ca1d05541f098aab42bb3464a1e39dfca6fe1af4d8e16f808e79a56c", size = 912884, upload-time = "2026-07-30T02:10:44.413Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b5/01/05606613365f19d317eddbf5f2aaea0f947af9175c4ada5a4b577124583e/pydantic_ai_slim-2.21.0-py3-none-any.whl", hash = "sha256:25c34084808b944c000ad520553d8ac50c4d992972662a0e63f700009afb9bad", size = 1102191, upload-time = "2026-07-30T02:10:37.357Z" },
+]
+
+[package.optional-dependencies]
+ag-ui = [
+    { name = "ag-ui-protocol" },
+    { name = "starlette" },
 ]
 
 [[package]]

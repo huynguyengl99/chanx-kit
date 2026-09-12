@@ -95,9 +95,10 @@ covers subscribing from a client, composing several kits, and overriding a kit's
 | [`notification`](kits/notification) | Fan out notifications to a user's live connections, from a signal, a worker, or another service |
 | [`room_chat`](kits/room_chat) | A chat room: history replayed on connect, plus a live roster. Pluggable store |
 | [`ag_ui`](kits/ag_ui) | Serve the AG-UI protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic |
+| [`pydantic_ai_ag_ui`](kits/pydantic_ai_ag_ui) | Run a Pydantic AI agent over AG-UI, approvals included, with the conversation kept server-side |
 
-Presence, a Redis-backed roster, a Django-backed message store and the test harness are
-kits too. See [kits/](kits) in this repository, or
+Presence, a conversation store, a Redis-backed roster, a Django-backed message store and
+the test harness are kits too. See [kits/](kits) in this repository, or
 **[browse them all](https://huynguyengl99.github.io/chanx-kit/kits/)** with their
 messages, hooks and caveats.
 

@@ -1,4 +1,5 @@
-from collections.abc import AsyncIterator
+import asyncio
+from collections.abc import AsyncIterator, Iterator
 from typing import Any, ClassVar
 
 import pytest
@@ -23,6 +24,7 @@ from ...chanx_testing import (
     setup_memory_layer,
 )
 from ..messages import AgUiRunMessage
+from ..store import InMemoryRunEventStore
 from ..topics import AgUiRunTopic, AgUiTopic
 
 PATH = "/ws/agent"
@@ -292,6 +294,191 @@ async def test_a_thread_emit_does_not_reach_another_thread(app: Any) -> None:
         )
 
         await assert_silent(comm)
+
+
+RUN_EVENT_STORE = InMemoryRunEventStore()
+
+
+class BroadcastAgUiTopic(AgUiTopic):
+    """Broadcasts its run, so a late joiner is replayed."""
+
+    broadcast_run_events = True
+    run_event_store = RUN_EVENT_STORE
+    gate: ClassVar[asyncio.Event | None] = None
+
+    async def run_agent(self, run_input: RunAgentInput) -> AsyncIterator[Event]:
+        yield TextMessageStartEvent(
+            type=EventType.TEXT_MESSAGE_START, message_id="msg-1"
+        )
+        yield TextMessageContentEvent(
+            type=EventType.TEXT_MESSAGE_CONTENT, message_id="msg-1", delta="Hel"
+        )
+        if self.gate is not None:
+            await self.gate.wait()
+        yield TextMessageContentEvent(
+            type=EventType.TEXT_MESSAGE_CONTENT, message_id="msg-1", delta="lo"
+        )
+        yield TextMessageEndEvent(type=EventType.TEXT_MESSAGE_END, message_id="msg-1")
+
+
+class BroadcastConsumer(KitConsumer):
+    channel_layer_alias = "default"
+    topics: ClassVar[list[type[Topic[Any]]]] = [BroadcastAgUiTopic, AgUiRunTopic]
+
+
+@pytest.fixture
+def broadcast_app() -> Iterator[Any]:
+    RUN_EVENT_STORE.reset()
+    BroadcastAgUiTopic.gate = None
+    yield build_app({PATH: BroadcastConsumer})
+    BroadcastAgUiTopic.gate = None
+
+
+@pytest.fixture
+def gate() -> Iterator[asyncio.Event]:
+    event = asyncio.Event()
+    BroadcastAgUiTopic.gate = event
+    yield event
+    event.set()
+
+
+def types_of(messages: list[dict[str, Any]]) -> list[str]:
+    return [m["payload"]["type"] for m in messages]
+
+
+async def test_every_connection_on_a_thread_sees_the_same_run(
+    broadcast_app: Any,
+) -> None:
+    """The point of broadcasting: a second tab streams the run it did not start."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as first:
+        await first.subscribe(THREAD)
+        async with communicator(broadcast_app, PATH, BroadcastConsumer) as second:
+            await second.subscribe(THREAD)
+
+            await first.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+
+            expected = [
+                "RUN_STARTED",
+                "TEXT_MESSAGE_START",
+                "TEXT_MESSAGE_CONTENT",
+                "TEXT_MESSAGE_CONTENT",
+                "TEXT_MESSAGE_END",
+                "RUN_FINISHED",
+            ]
+            assert types_of(await receive_json(first, 6)) == expected
+            assert types_of(await receive_json(second, 6)) == expected
+
+
+async def test_run_events_carry_a_sequence_the_client_can_order_by(
+    broadcast_app: Any,
+) -> None:
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await comm.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+
+        messages = await receive_json(comm, 6)
+
+    assert [m["seq"] for m in messages] == [1, 2, 3, 4, 5, 6]
+
+
+async def test_a_connection_joining_mid_run_is_replayed_from_the_start(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    """AG-UI cannot join a stream in progress: a delta before its start is malformed."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as first:
+        await first.subscribe(THREAD)
+        await first.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+
+        opening = await receive_json(first, 3)
+        assert types_of(opening) == [
+            "RUN_STARTED",
+            "TEXT_MESSAGE_START",
+            "TEXT_MESSAGE_CONTENT",
+        ]
+
+        async with communicator(broadcast_app, PATH, BroadcastConsumer) as second:
+            await second.subscribe(THREAD)
+
+            replayed = await receive_json(second, 3)
+            assert types_of(replayed) == [
+                "RUN_STARTED",
+                "TEXT_MESSAGE_START",
+                "TEXT_MESSAGE_CONTENT",
+            ]
+            assert [m["seq"] for m in replayed] == [1, 2, 3]
+
+            gate.set()
+
+            rest = await receive_json(second, 3)
+            assert types_of(rest) == [
+                "TEXT_MESSAGE_CONTENT",
+                "TEXT_MESSAGE_END",
+                "RUN_FINISHED",
+            ]
+            # One sequence across the replayed and the live half, so a client can
+            # drop what it already applied and detect a gap.
+            assert [m["seq"] for m in rest] == [4, 5, 6]
+
+
+async def test_a_run_outlives_the_connection_that_started_it(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    """What a mid-run refresh depends on: the run outlives its socket."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as first:
+        await first.subscribe(THREAD)
+        await first.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+        await receive_json(first, 3)
+
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as second:
+        await second.subscribe(THREAD)
+        assert types_of(await receive_json(second, 3)) == [
+            "RUN_STARTED",
+            "TEXT_MESSAGE_START",
+            "TEXT_MESSAGE_CONTENT",
+        ]
+
+        gate.set()
+
+        assert types_of(await receive_json(second, 3)) == [
+            "TEXT_MESSAGE_CONTENT",
+            "TEXT_MESSAGE_END",
+            "RUN_FINISHED",
+        ]
+
+
+async def test_a_finished_run_is_not_replayed(broadcast_app: Any) -> None:
+    """A finished run is the client's own history, not a stream to replay."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as first:
+        await first.subscribe(THREAD)
+        await first.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+        await receive_json(first, 6)
+
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as second:
+        await second.subscribe(THREAD)
+        await assert_silent(second)
+
+
+async def test_events_are_not_broadcast_by_default(app: Any) -> None:
+    """The default stays one connection per run: no group hop, no seq."""
+    async with communicator(app, PATH, AgUiConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await comm.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+
+        messages = await receive_json(comm, 5)
+
+    assert all("seq" not in m for m in messages)
+
+
+async def test_a_second_connection_sees_nothing_when_not_broadcasting(app: Any) -> None:
+    async with communicator(app, PATH, AgUiConsumer) as first:
+        await first.subscribe(THREAD)
+        async with communicator(app, PATH, AgUiConsumer) as second:
+            await second.subscribe(THREAD)
+
+            await first.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+            await receive_json(first, 5)
+
+            await assert_silent(second)
 
 
 async def test_another_process_can_emit_into_a_run(app: Any) -> None:

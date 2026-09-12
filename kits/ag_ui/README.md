@@ -48,27 +48,78 @@ conversations can share one connection.
 
 ## Any provider
 
-The kit does not depend on a specific agent framework. With pydantic-ai you can adapt
-its stream yourself, or use its AG-UI support to produce events and forward them:
+The kit does not depend on a specific agent framework. `run_agent` is the hook for a
+provider you drive yourself: yield content events, and the run is bracketed for you.
+
+### When the provider emits its own lifecycle
+
+An agent framework with AG-UI support of its own already emits `RUN_STARTED` and
+`RUN_FINISHED`, and its `RUN_FINISHED` carries the run's outcome — which can mean
+more than "done", so it must not be replaced by a synthesised one. Override
+`run_events` rather than `run_agent` to pass a provider's whole stream through
+untouched:
 
 ```python
 class MyAgUiTopic(AgUiTopic):
-    async def run_agent(self, run_input: RunAgentInput) -> AsyncIterator[Event]:
-        async with agent.run_stream(prompt_from(run_input)) as result:
-            message_id = uuid4().hex
-            yield TextMessageStartEvent(
-                type=EventType.TEXT_MESSAGE_START, message_id=message_id
-            )
-            async for delta in result.stream_text(delta=True):
-                yield TextMessageContentEvent(
-                    type=EventType.TEXT_MESSAGE_CONTENT,
-                    message_id=message_id,
-                    delta=delta,
-                )
-            yield TextMessageEndEvent(
-                type=EventType.TEXT_MESSAGE_END, message_id=message_id
-            )
+    async def run_events(self, run_input: RunAgentInput) -> AsyncIterator[Event]:
+        async for event in my_framework_adapter(run_input):
+            yield event
 ```
+
+`run_agent` and `run_events` are the same seam at two heights: implement whichever
+matches how much of the protocol your provider already speaks.
+
+## Several tabs on one run
+
+By default a run is written straight down the socket that asked for it. Set
+`broadcast_run_events` to let every connection on a thread watch it instead — a
+second tab, or the same tab after a refresh:
+
+```python
+class MyAgUiTopic(AgUiTopic):
+    broadcast_run_events = True
+```
+
+Three things change:
+
+- Events go to the thread's group, so the run no longer depends on the connection
+  that started it. Close that tab mid-run and the run continues for everyone else.
+- Each event carries a per-run `seq` on the chanx envelope, restarting at 1 on
+  `RUN_STARTED`. It sits beside the message, not inside `payload`, so the AG-UI event
+  is unchanged and a client still switches on `payload.type`.
+- A connection subscribing mid-run is replayed the run so far before anything live,
+  so it always sees a stream beginning at `RUN_STARTED`. AG-UI has no way to join a
+  stream in progress: a content delta before its `TEXT_MESSAGE_START` is malformed.
+
+Replay covers the run in flight only. Once a run finishes its buffer is dropped, and
+a connection arriving afterwards should load your stored transcript instead.
+
+### What the client owes you
+
+Replayed and live events share one sequence, so a client applies them in order and
+drops what it has already seen:
+
+```ts
+let expected = 1
+const pending = new Map<number, AgUiEvent>()
+
+function onEvent(seq: number | undefined, event: AgUiEvent) {
+  if (seq === undefined) return apply(event)   // not part of a run
+  if (event.type === "RUN_STARTED") expected = seq
+  if (seq < expected) return                   // already applied via replay
+  pending.set(seq, event)
+  while (pending.has(expected)) {
+    apply(pending.get(expected)!)
+    pending.delete(expected++)
+  }
+}
+```
+
+!!! warning
+    The default `InMemoryRunEventStore` is process-local. With more than one worker,
+    a connection can land on a process that never saw the run, and its replay comes
+    back empty. Implement `RunEventStore` against Redis or another shared backend
+    before running more than one process.
 
 ## Emitting from elsewhere
 
@@ -127,7 +178,10 @@ Set `send_by_alias = False` only if you are deliberately talking to a non-AG-UI 
 
 | Hook | Default | Purpose |
 |---|---|---|
-| `run_agent(run_input)` | raises | Produce the run's events |
+| `run_agent(run_input)` | raises | Produce the run's content events |
+| `run_events(run_input)` | brackets `run_agent` | Produce the run's whole stream, lifecycle included |
 | `on_run_error(input, err)` | sends `RUN_ERROR` | Log, or hide provider detail |
 | `new_run_id()` | uuid4 hex | Run ids when the client omits one |
+| `broadcast_run_events` | `False` | Let every connection on the thread watch the run |
+| `run_event_store` | `InMemoryRunEventStore()` | Where a run is buffered for replay |
 | `send_by_alias` | `True` | Turn off only for a non-AG-UI client |
