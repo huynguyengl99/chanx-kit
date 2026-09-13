@@ -17,6 +17,7 @@ from ag_ui.core import RunAgentInput, UserMessage
 from ...ag_ui.messages import AgUiRunMessage
 from ...chanx_testing import (
     KitConsumer,
+    assert_silent,
     build_app,
     communicator,
     receive_json,
@@ -229,3 +230,49 @@ async def test_a_topic_without_an_agent_says_so(app: Any) -> None:
 
     assert error["payload"]["type"] == "RUN_ERROR"
     assert "must set `agent`" in error["payload"]["message"]
+
+
+async def test_a_reconnect_is_told_the_conversation(app: Any) -> None:
+    """The paper trail: the adapter dumps stored messages into the same format it
+    writes live, so a reload needs no replay protocol of its own."""
+    async with communicator(app, PATH, AgentConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await comm.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+        await receive_json(comm, 5)
+
+    async with communicator(app, PATH, AgentConsumer) as fresh:
+        await fresh.subscribe(THREAD)
+        first = (await receive_json(fresh, 1))[0]
+
+    assert first["payload"]["type"] == "MESSAGES_SNAPSHOT"
+    roles = [m["role"] for m in first["payload"]["messages"]]
+    assert roles[0] == "user"
+    assert "assistant" in roles
+
+
+async def test_a_thread_with_no_conversation_sends_no_transcript(app: Any) -> None:
+    async with communicator(app, PATH, AgentConsumer) as comm:
+        await comm.subscribe("agui:thread:never-used")
+        await assert_silent(comm)
+
+
+async def test_the_transcript_can_be_turned_off(app: Any) -> None:
+    """A client that keeps its own messages does not want ours."""
+
+    class QuietTopic(TaskletTopic):
+        send_transcript = False
+
+    class QuietConsumer(KitConsumer):
+        channel_layer_alias = "default"
+        topics: ClassVar[list[type[Topic[Any]]]] = [QuietTopic]
+
+    quiet_app = build_app({PATH: QuietConsumer})
+
+    async with communicator(quiet_app, PATH, QuietConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await comm.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+        await receive_json(comm, 5)
+
+    async with communicator(quiet_app, PATH, QuietConsumer) as fresh:
+        await fresh.subscribe(THREAD)
+        await assert_silent(fresh)

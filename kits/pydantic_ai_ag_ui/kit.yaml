@@ -3,8 +3,8 @@ title: Pydantic AI over AG-UI
 description: >-
   Run a Pydantic AI agent over the AG-UI protocol on a chanx websocket: streamed
   text, tool calls and human-in-the-loop approvals, with the conversation kept
-  server-side so a client never replays it.
-version: 0.1.0
+  server-side and replayed to a reconnecting client as MESSAGES_SNAPSHOT.
+version: 0.2.0
 tier: contrib
 tags: [agent, ag-ui, pydantic-ai, streaming, approvals]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]

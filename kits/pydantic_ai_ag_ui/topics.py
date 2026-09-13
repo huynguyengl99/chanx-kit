@@ -9,7 +9,7 @@ from pydantic_ai.messages import ModelMessage
 from pydantic_ai.run import AgentRunResult
 from pydantic_ai.ui.ag_ui import AGUIAdapter
 
-from ag_ui.core import Event, RunAgentInput
+from ag_ui.core import Event, EventType, MessagesSnapshotEvent, RunAgentInput
 
 from ..ag_ui.topics import AgUiTopic
 from ..conversation_store.store import ConversationStore, InMemoryConversationStore
@@ -23,6 +23,10 @@ class PydanticAIAgUiTopic(AgUiTopic):
     agent: ClassVar[AbstractAgent[Any, Any] | None] = None
 
     conversation_store: ClassVar[ConversationStore] = InMemoryConversationStore()
+
+    # The conversation is the server's, so a reconnecting client is told it rather
+    # than left with a blank page. Turn off when the client keeps its own.
+    send_transcript: ClassVar[bool] = True
 
     def get_agent(self) -> AbstractAgent[Any, Any]:
         """The agent this run uses. Override to choose one per connection."""
@@ -38,7 +42,12 @@ class PydanticAIAgUiTopic(AgUiTopic):
         [`StateDeps`][pydantic_ai.ui.StateDeps] to receive AG-UI's ``state``."""
         return None
 
-    async def load_history(self, run_input: RunAgentInput) -> list[ModelMessage]:
+    async def load_history(
+        self, run_input: RunAgentInput | None = None
+    ) -> list[ModelMessage]:
+        """The stored conversation. ``run_input`` is passed when a run is about to
+        use it, and omitted when something else needs it, such as the transcript
+        sent on subscribe."""
         conversation = await self.conversation_store.load(self.thread_id)
         return (
             ModelMessagesTypeAdapter.validate_json(conversation) if conversation else []
@@ -47,6 +56,36 @@ class PydanticAIAgUiTopic(AgUiTopic):
     async def save_history(self, messages: Sequence[ModelMessage]) -> None:
         conversation = ModelMessagesTypeAdapter.dump_json(list(messages)).decode()
         await self.conversation_store.save(self.thread_id, conversation)
+
+    async def transcript(self) -> MessagesSnapshotEvent | None:
+        """The conversation as AG-UI messages, or ``None`` when there is none yet.
+
+        The adapter that writes the live stream also knows how to dump stored
+        messages into it, so a reload needs no replay protocol of its own.
+        """
+        messages = await self.load_history()
+        if not messages:
+            return None
+        return MessagesSnapshotEvent(
+            type=EventType.MESSAGES_SNAPSHOT,
+            messages=AGUIAdapter.dump_messages(messages),
+        )
+
+    async def send_initial_state(self) -> None:
+        """What a new connection is told before the run in flight is replayed.
+
+        Override to add your own state, calling ``super()`` first: whatever goes
+        here must land before the replay, so replayed events apply on top of it.
+        """
+        if not self.send_transcript:
+            return
+        transcript = await self.transcript()
+        if transcript is not None:
+            await self.send_run_event(transcript, seq=None)
+
+    async def on_subscribe(self) -> None:
+        await self.send_initial_state()
+        await super().on_subscribe()
 
     async def on_run_complete(self, result: AgentRunResult[Any]) -> None:
         """Persist the conversation. Also runs when a run stops for approval, which
