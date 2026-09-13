@@ -29,7 +29,7 @@
       "title": "AG-UI",
       "description": "Serve the AG-UI agent-user interaction protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic: yield events from any agent. Optionally broadcasts a run to every connection on its thread, replaying it to one that joins part-way through.",
       "tier": "core",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "path": "kits/ag_ui",
       "tags": [
         "agent",
@@ -269,7 +269,7 @@
       "title": "Pydantic AI over AG-UI",
       "description": "Run a Pydantic AI agent over the AG-UI protocol on a chanx websocket: streamed text, tool calls and human-in-the-loop approvals, with the conversation kept server-side and replayed to a reconnecting client as MESSAGES_SNAPSHOT.",
       "tier": "contrib",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "path": "kits/pydantic_ai_ag_ui",
       "tags": [
         "agent",
