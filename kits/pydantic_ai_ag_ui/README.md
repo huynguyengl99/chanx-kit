@@ -102,8 +102,8 @@ converted by the same adapter that writes the live stream — so a reload render
 prompts, tool cards and answers it had before, with no replay protocol of its own.
 Set `send_transcript = False` for a client that keeps its own messages.
 
-Anything else a connection needs goes in `send_initial_state`, which runs before the
-run in flight is replayed:
+Anything else a connection needs goes in `send_initial_state`, the `ag-ui` kit's hook,
+which runs before the run in flight is replayed:
 
 ```python
 class TaskletTopic(PydanticAIAgUiTopic):
@@ -160,8 +160,6 @@ what the client owes you in return.
 | `agent_deps(run_input)` | `None` | Dependencies, and AG-UI `state` binding |
 | `load_history(run_input=None)` | from `conversation_store` | The conversation, for a run or for the transcript |
 | `transcript()` | `MESSAGES_SNAPSHOT` | The conversation as AG-UI messages |
-| `send_initial_state()` | sends the transcript | What a new connection gets before the replay |
-| `send_transcript` | `True` | Turn off for a client that keeps its own messages |
 | `save_history(messages)` | to `conversation_store` | Where the conversation is written |
 | `on_run_complete(result)` | saves history | React to a finished or paused run |
 | `conversation_store` | `InMemoryConversationStore()` | Conversation persistence |

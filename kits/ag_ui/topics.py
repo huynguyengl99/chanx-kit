@@ -53,6 +53,10 @@ class AgUiTopic(AgUiBaseTopic):
 
     broadcast_run_events: ClassVar[bool] = False
 
+    # A provider that keeps the conversation tells a reconnecting client about it
+    # rather than leaving a blank page. Turn off when the client keeps its own.
+    send_transcript: ClassVar[bool] = True
+
     run_event_store: ClassVar[RunEventStore] = InMemoryRunEventStore()
 
     @property
@@ -62,8 +66,30 @@ class AgUiTopic(AgUiBaseTopic):
     def new_run_id(self) -> str:
         return uuid.uuid4().hex
 
+    async def transcript(self) -> Event | None:
+        """The conversation a reconnecting client should be shown, if any.
+
+        Nothing by default: only a provider that keeps the conversation knows how
+        to render it, usually as ``MESSAGES_SNAPSHOT``.
+        """
+        return None
+
+    async def send_initial_state(self) -> None:
+        """What a new connection is told before the run in flight is replayed.
+
+        Override to add your own state, calling ``super()`` first: whatever goes
+        here must land before the replay, or replayed events race it.
+        """
+        if not self.send_transcript:
+            return
+        transcript = await self.transcript()
+        if transcript is not None:
+            await self.send_run_event(transcript, seq=None)
+
     async def on_subscribe(self) -> None:
-        """Replay the run in flight: AG-UI cannot join a stream part-way through."""
+        """State first, then the run in flight: AG-UI cannot join a stream
+        part-way through, so the run is replayed rather than picked up."""
+        await self.send_initial_state()
         if not self.broadcast_run_events:
             return
         for seq, event in await self.run_event_store.replay(self.thread_id):

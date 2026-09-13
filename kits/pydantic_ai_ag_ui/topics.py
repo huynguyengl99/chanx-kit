@@ -24,10 +24,6 @@ class PydanticAIAgUiTopic(AgUiTopic):
 
     conversation_store: ClassVar[ConversationStore] = InMemoryConversationStore()
 
-    # The conversation is the server's, so a reconnecting client is told it rather
-    # than left with a blank page. Turn off when the client keeps its own.
-    send_transcript: ClassVar[bool] = True
-
     def get_agent(self) -> AbstractAgent[Any, Any]:
         """The agent this run uses. Override to choose one per connection."""
         if self.agent is None:
@@ -58,10 +54,11 @@ class PydanticAIAgUiTopic(AgUiTopic):
         await self.conversation_store.save(self.thread_id, conversation)
 
     async def transcript(self) -> MessagesSnapshotEvent | None:
-        """The conversation as AG-UI messages, or ``None`` when there is none yet.
+        """The stored conversation as AG-UI messages.
 
         The adapter that writes the live stream also knows how to dump stored
-        messages into it, so a reload needs no replay protocol of its own.
+        messages into it, so a reload needs no replay protocol of its own. The
+        kit sends this before replaying the run in flight.
         """
         messages = await self.load_history()
         if not messages:
@@ -70,22 +67,6 @@ class PydanticAIAgUiTopic(AgUiTopic):
             type=EventType.MESSAGES_SNAPSHOT,
             messages=AGUIAdapter.dump_messages(messages),
         )
-
-    async def send_initial_state(self) -> None:
-        """What a new connection is told before the run in flight is replayed.
-
-        Override to add your own state, calling ``super()`` first: whatever goes
-        here must land before the replay, so replayed events apply on top of it.
-        """
-        if not self.send_transcript:
-            return
-        transcript = await self.transcript()
-        if transcript is not None:
-            await self.send_run_event(transcript, seq=None)
-
-    async def on_subscribe(self) -> None:
-        await self.send_initial_state()
-        await super().on_subscribe()
 
     async def on_run_complete(self, result: AgentRunResult[Any]) -> None:
         """Persist the conversation. Also runs when a run stops for approval, which

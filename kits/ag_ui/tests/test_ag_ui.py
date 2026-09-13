@@ -6,6 +6,7 @@ import pytest
 from chanx.core.topic import Topic
 
 from ag_ui.core import (
+    CustomEvent,
     Event,
     EventType,
     RunAgentInput,
@@ -501,3 +502,45 @@ async def test_another_process_can_emit_into_a_run(app: Any) -> None:
 
     assert event["payload"]["delta"] == "from a worker"
     assert event["payload"]["messageId"] == "msg-2"
+
+
+async def test_initial_state_lands_before_the_replayed_run(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    """The ordering the hook exists for: state first, so replayed events apply on
+    top of it rather than racing it."""
+
+    class StatefulTopic(BroadcastAgUiTopic):
+        async def transcript(self) -> Event | None:
+            return CustomEvent(type=EventType.CUSTOM, name="state", value={"ready": 1})
+
+    class StatefulConsumer(KitConsumer):
+        channel_layer_alias = "default"
+        topics: ClassVar[list[type[Topic[Any]]]] = [StatefulTopic, AgUiRunTopic]
+
+    app = build_app({PATH: StatefulConsumer})
+
+    async with communicator(app, PATH, StatefulConsumer) as first:
+        await first.subscribe(THREAD)
+        await receive_json(first, 1)  # its own initial state
+        await first.send_message(AgUiRunMessage(payload=run_input()), topic=THREAD)
+        await receive_json(first, 3)
+
+        async with communicator(app, PATH, StatefulConsumer) as late:
+            await late.subscribe(THREAD)
+            joined = await receive_json(late, 4)
+
+    assert types_of(joined)[0] == "CUSTOM"
+    assert joined[0]["payload"]["value"] == {"ready": 1}
+    # Then the run so far, from its start.
+    assert types_of(joined)[1:] == [
+        "RUN_STARTED",
+        "TEXT_MESSAGE_START",
+        "TEXT_MESSAGE_CONTENT",
+    ]
+
+
+async def test_a_provider_without_a_transcript_sends_nothing_extra(app: Any) -> None:
+    async with communicator(app, PATH, AgUiConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await assert_silent(comm)

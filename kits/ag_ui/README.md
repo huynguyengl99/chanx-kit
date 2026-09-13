@@ -121,6 +121,23 @@ function onEvent(seq: number | undefined, event: AgUiEvent) {
     back empty. Implement `RunEventStore` against Redis or another shared backend
     before running more than one process.
 
+## State a new connection needs
+
+`send_initial_state` runs when a client subscribes, **before** the run in flight is
+replayed, so whatever it sends is already applied when the replayed events land:
+
+```python
+class MyAgUiTopic(AgUiTopic):
+    async def send_initial_state(self) -> None:
+        await super().send_initial_state()
+        await self.send_run_event(my_state_snapshot(), seq=None)
+```
+
+`transcript()` is the one piece of state the kit asks about by name. It returns
+nothing here, because only a provider that keeps the conversation knows how to render
+it — usually as `MESSAGES_SNAPSHOT`. A provider that does so overrides it, and
+`send_transcript = False` turns it off for a client that keeps its own messages.
+
 ## Emitting from elsewhere
 
 A worker, a graph node or a tool runner can contribute events without holding the
@@ -183,5 +200,8 @@ Set `send_by_alias = False` only if you are deliberately talking to a non-AG-UI 
 | `on_run_error(input, err)` | sends `RUN_ERROR` | Log, or hide provider detail |
 | `new_run_id()` | uuid4 hex | Run ids when the client omits one |
 | `broadcast_run_events` | `False` | Let every connection on the thread watch the run |
+| `send_initial_state()` | sends `transcript()` | State for a new connection, before the replay |
+| `transcript()` | `None` | The conversation to show a reconnecting client |
+| `send_transcript` | `True` | Turn off for a client that keeps its own messages |
 | `run_event_store` | `InMemoryRunEventStore()` | Where a run is buffered for replay |
 | `send_by_alias` | `True` | Turn off only for a non-AG-UI client |
