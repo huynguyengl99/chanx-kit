@@ -14,7 +14,9 @@ requires:
   - conversation-store
 
 dependencies:
-  - "chanx>=2.10.0,<3"
+  # 2.10.2 emits a discriminated union in the form AsyncAPI accepts;
+  # earlier versions make the generated document invalid.
+  - "chanx>=2.10.2,<3"
   - "pydantic-ai-slim[ag-ui]>=2.13"
 
 optional:

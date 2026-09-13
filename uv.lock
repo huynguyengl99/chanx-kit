@@ -382,14 +382,14 @@ wheels = [
 
 [[package]]
 name = "chanx"
-version = "2.10.0"
+version = "2.10.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/72/e5/87587b04bea60a7546bd0dcfce2ca5976f93eb3f6a8529992fe55e7e0551/chanx-2.10.0.tar.gz", hash = "sha256:302caa82555ab9b1cf0cd1f2a56f634b3cedd33a9c20e393974b8fa979731c95", size = 86988, upload-time = "2026-08-12T07:09:00.929Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/04/b110cba5c9d96119a85f564ce3f285ce1fbd385df6f90f1e4dc6cde14b92/chanx-2.10.2.tar.gz", hash = "sha256:5c6f46501e5020b1d86bf70db59e9dbc78cba9bcc8c8c5e6668c95fe73f90459", size = 87513, upload-time = "2026-09-13T09:00:34.016Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/aa/462fc30ca5ae383074497ee5f136d2b9df66b10ab5b916fbff1816ccb281/chanx-2.10.0-py3-none-any.whl", hash = "sha256:d606abd2ffbb5cf9b762dda2ced5ab53e7d7e688903e958ca51dc6a315611717", size = 113335, upload-time = "2026-08-12T07:08:59.418Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/72/683092a7b3b7c4b66986e053aa415b5a42526b6a42a891eaa32bf17b2d1d/chanx-2.10.2-py3-none-any.whl", hash = "sha256:ccdd7dd01bc5fb7fef804e613c7fc7e1f471022ece10b9bb6ac9025b3e70aa66", size = 113877, upload-time = "2026-09-13T09:00:32.473Z" },
 ]
 
 [package.optional-dependencies]
@@ -504,9 +504,9 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "chanx", specifier = ">=2.10.0,<3" },
-    { name = "chanx", extras = ["channels"], marker = "extra == 'django'", specifier = ">=2.10.0,<3" },
-    { name = "chanx", extras = ["fast-channels"], marker = "extra == 'fastapi'", specifier = ">=2.10.0,<3" },
+    { name = "chanx", specifier = ">=2.10.2,<3" },
+    { name = "chanx", extras = ["channels"], marker = "extra == 'django'", specifier = ">=2.10.2,<3" },
+    { name = "chanx", extras = ["fast-channels"], marker = "extra == 'fastapi'", specifier = ">=2.10.2,<3" },
 ]
 provides-extras = ["django", "fastapi"]
 
@@ -523,7 +523,7 @@ dev = [
 dev-django = [
     { name = "ag-ui-protocol", specifier = ">=0.1.22" },
     { name = "channels-redis", specifier = ">=4,<5" },
-    { name = "chanx", extras = ["channels"], specifier = ">=2.10.0" },
+    { name = "chanx", extras = ["channels"], specifier = ">=2.10.2" },
     { name = "daphne", specifier = ">=4.1.2,<5" },
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.2" },
     { name = "djangorestframework", specifier = ">=3.15" },
@@ -539,7 +539,7 @@ dev-django = [
 ]
 dev-fastapi = [
     { name = "ag-ui-protocol", specifier = ">=0.1.22" },
-    { name = "chanx", extras = ["fast-channels"], specifier = ">=2.10.0" },
+    { name = "chanx", extras = ["fast-channels"], specifier = ">=2.10.2" },
     { name = "fakeredis", specifier = ">=2.26" },
     { name = "fast-channels", extras = ["redis"], specifier = ">=1.0.2" },
     { name = "httpx", specifier = ">=0.27.0,<1" },

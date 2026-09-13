@@ -14,7 +14,7 @@ dev = [
 ]
 dev-django = [
   "channels-redis>=4,<5",
-  "chanx[channels]>=2.10.0",
+  "chanx[channels]>=2.10.2",
   "daphne>=4.1.2,<5",
   "djangorestframework>=3.15",
   "djangorestframework-stubs>=3.15",
@@ -24,7 +24,7 @@ dev-django = [
   {include-group = "dev"}
 ]
 dev-fastapi = [
-  "chanx[fast_channels]>=2.10.0",
+  "chanx[fast_channels]>=2.10.2",
   "fast-channels[redis]>=1.0.2",
   "httpx>=0.27.0,<1",
   "uvicorn[standard]>=0.35.0",
@@ -75,7 +75,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Application Frameworks"
 ]
 dependencies = [
-  "chanx>=2.10.0,<3"
+  "chanx>=2.10.2,<3"
 ]
 description = "Composable, copy-in WebSocket components for chanx. Kits are copied with copit; this package only reserves the name."
 license = {file = "LICENSE"}
@@ -85,8 +85,8 @@ requires-python = ">=3.11,<4.0"
 version = "0.1.0"
 
 [project.optional-dependencies]
-django = ["chanx[channels]>=2.10.0,<3"]
-fastapi = ["chanx[fast_channels]>=2.10.0,<3"]
+django = ["chanx[channels]>=2.10.2,<3"]
+fastapi = ["chanx[fast_channels]>=2.10.2,<3"]
 
 [project.urls]
 Documentation = "https://github.com/huynguyengl99/chanx-kit#readme"

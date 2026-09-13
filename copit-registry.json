@@ -42,7 +42,7 @@
       ],
       "requires": [],
       "dependencies": [
-        "chanx>=2.10.0,<3",
+        "chanx>=2.10.2,<3",
         "ag-ui-protocol>=0.1.19"
       ],
       "variants": {},
@@ -286,7 +286,7 @@
         "conversation-store"
       ],
       "dependencies": [
-        "chanx>=2.10.0,<3",
+        "chanx>=2.10.2,<3",
         "pydantic-ai-slim[ag-ui]>=2.13"
       ],
       "variants": {},

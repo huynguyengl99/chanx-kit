@@ -11,7 +11,9 @@ tags: [agent, ag-ui, protocol, streaming]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 
 dependencies:
-  - "chanx>=2.10.0,<3"
+  # 2.10.2 emits a discriminated union in the form AsyncAPI accepts;
+  # earlier versions make the generated document invalid.
+  - "chanx>=2.10.2,<3"
   - "ag-ui-protocol>=0.1.19"
 
 optional:
