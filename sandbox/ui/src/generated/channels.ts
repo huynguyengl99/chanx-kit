@@ -2,6 +2,7 @@
 // Regenerate with: pnpm gen
 
 import type {
+  AgUiCancelMessage,
   AgUiEventMessage,
   AgUiRunMessage,
   ChatBacklogMessage,
@@ -39,7 +40,7 @@ export interface AgentAgUiRunTopicChannel {
 
 /** Scripts the events a provider would produce; the demo has no model credentials, so the protocol is identical but the content is local. */
 export const AgentDemoAgUiTopicAddress = "/ws/agent" as const;
-export type AgentDemoAgUiTopicToServer = AgUiRunMessage;
+export type AgentDemoAgUiTopicToServer = AgUiCancelMessage | AgUiRunMessage;
 export type AgentDemoAgUiTopicToClient = AgUiEventMessage;
 export interface AgentDemoAgUiTopicChannel {
   toServer: AgentDemoAgUiTopicToServer;

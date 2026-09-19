@@ -36,6 +36,17 @@ export interface ActivitySnapshotEvent {
   subagentRunId?: string | null;
 }
 
+/** Which run to stop. Named rather than implied, so a cancel that arrives after its run has ended cannot stop the one that replaced it. */
+export interface AgUiCancel {
+  runId: string;
+}
+
+/** Client asks for the run in flight to stop. AG-UI has no cancellation event: over SSE a client stops a run by dropping the HTTP request, which a shared, long-lived socket has no equivalent for. The protocol leaves this to the transport, so it is asked for explicitly here. */
+export interface AgUiCancelMessage {
+  action: "ag_ui_cancel";
+  payload: AgUiCancel;
+}
+
 /** One AG-UI event on its way to the client, as the protocol's ``Event`` union. */
 export interface AgUiEventMessage {
   action: "ag_ui_event";
