@@ -77,6 +77,41 @@ class MyAgUiTopic(AgUiTopic):
     told the thread was free. Implement `ActiveRunStore` against Redis — `SET NX` is
     enough — before running more than one process.
 
+## Stopping a run
+
+Over SSE a client stops a run by dropping the HTTP request. A shared, long-lived
+socket has no equivalent, and AG-UI has no cancellation event of its own, so the kit
+adds one message for it:
+
+```json
+{ "action": "ag_ui_cancel", "payload": { "runId": "run-1" } }
+```
+
+The run stops where it is and ends as `RUN_ERROR`, inside the run's own sequence, so
+every tab watching it learns it is over. `RUN_ERROR` rather than `RUN_FINISHED`
+because a cancelled run did not produce what it was asked for, and a client reading
+`RUN_FINISHED` would take it for success.
+
+The run is named rather than implied, so a cancel that arrives just after its run
+ended cannot stop the one that replaced it. A cancel for a run that is already
+finished does nothing.
+
+Any tab can cancel, not only the one that started the run — like approvals, the run
+belongs to the thread.
+
+**A run nobody can see stops on its own.** When `broadcast_run_events` is off, a run
+writes to the one socket that asked for it, so if that connection goes away the rest
+of the run can never be seen and producing it only costs money. Leaving cancels it.
+When runs *are* broadcast the opposite holds: the run belongs to the thread, the
+other tabs are still watching, and it keeps going — which is what a mid-run refresh
+depends on.
+
+!!! warning
+    A task handle cannot leave the process holding it, so a cancel only reaches a run
+    on the process running it. With more than one worker, a client connected to a
+    different instance cannot stop the run. This is the same process-local boundary
+    as the replay buffer and the active-run claim.
+
 ## Any provider
 
 The kit does not depend on a specific agent framework. `run_agent` is the hook for a
@@ -220,6 +255,7 @@ Set `send_by_alias = False` only if you are deliberately talking to a non-AG-UI 
 | Action | Direction | Payload |
 |---|---|---|
 | `ag_ui_run` | client → server | AG-UI `RunAgentInput`: thread and run ids, messages, state, tools |
+| `ag_ui_cancel` | client → server | `runId`: stop the run in flight on this thread |
 | `ag_ui_event` | server → client | AG-UI `Event`: the full union, keyed on `type` |
 
 ## Customise
@@ -230,6 +266,7 @@ Set `send_by_alias = False` only if you are deliberately talking to a non-AG-UI 
 | `run_events(run_input)` | brackets `run_agent` | Produce the run's whole stream, lifecycle included |
 | `on_run_error(input, err)` | sends `RUN_ERROR` | Log, or hide provider detail |
 | `on_run_refused(input, id)` | sends `RUN_ERROR` to the asker | Answer a run sent to a busy thread |
+| `on_run_cancelled(input)` | sends `RUN_ERROR` | How a stopped run is reported |
 | `new_run_id()` | uuid4 hex | Run ids when the client omits one |
 | `broadcast_run_events` | `False` | Let every connection on the thread watch the run |
 | `send_initial_state()` | sends `transcript()` | State for a new connection, before the replay |

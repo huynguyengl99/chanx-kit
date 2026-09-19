@@ -1,8 +1,9 @@
 """AG-UI over chanx websockets."""
 
+import asyncio
 import uuid
 from collections.abc import AsyncIterator
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from chanx.core.decorators import ws_handler
 from chanx.core.envelope import current_seq
@@ -18,7 +19,7 @@ from ag_ui.core import (
     RunStartedEvent,
 )
 
-from .messages import AgUiEventMessage, AgUiRunMessage
+from .messages import AgUiCancelMessage, AgUiEventMessage, AgUiRunMessage
 from .store import (
     ActiveRunStore,
     InMemoryActiveRunStore,
@@ -65,6 +66,16 @@ class AgUiTopic(AgUiBaseTopic):
     run_event_store: ClassVar[RunEventStore] = InMemoryRunEventStore()
 
     active_run_store: ClassVar[ActiveRunStore] = InMemoryActiveRunStore()
+
+    # A task handle cannot leave the process holding it, so unlike the stores above
+    # this is a plain registry rather than a protocol: a cancel stops a run only on
+    # the process that is running it.
+    _run_tasks: ClassVar[dict[tuple[str, str], "asyncio.Task[None]"]] = {}
+
+    def __init__(self, consumer: Any, topic: str) -> None:
+        super().__init__(consumer, topic)
+        # The runs this connection started, so leaving can take them with it.
+        self._own_runs: set[tuple[str, str]] = set()
 
     @property
     def thread_id(self) -> str:
@@ -146,13 +157,72 @@ class AgUiTopic(AgUiBaseTopic):
             await self.on_run_refused(run_input, active_run_id)
             return
 
+        # The stream runs as its own task so a cancel has something to stop. Cancelling
+        # the handler instead would leave nothing running to report the outcome.
+        key = (self.thread_id, run_input.run_id)
+        run_task: asyncio.Task[None] = asyncio.ensure_future(
+            self._stream_run(run_input)
+        )
+        self._run_tasks[key] = run_task
+        self._own_runs.add(key)
         try:
-            async for event in self.run_events(run_input):
-                await self.emit(event)
+            await run_task
+        except asyncio.CancelledError:
+            if not run_task.cancelled():
+                raise  # this handler is being torn down, not the run
+            await self.on_run_cancelled(run_input)
         except Exception as error:  # noqa: BLE001 - surfaced to the client as RUN_ERROR
             await self.on_run_error(run_input, error)
         finally:
+            if not run_task.done():
+                run_task.cancel()
+            self._run_tasks.pop(key, None)
+            self._own_runs.discard(key)
             await self.active_run_store.end(self.thread_id, run_input.run_id)
+
+    async def on_unsubscribe(self) -> None:
+        """Take this connection's runs with it when it leaves.
+
+        Only when the run is not broadcast. Then its events go to this socket alone,
+        so once the socket is gone no one can ever see the rest of it and producing
+        it is pure cost. A broadcast run belongs to the thread instead, and the other
+        tabs watching it are the reason it keeps going.
+        """
+        await super().on_unsubscribe()
+        if self.broadcast_run_events:
+            return
+        for key in list(self._own_runs):
+            run_task = self._run_tasks.get(key)
+            if run_task is not None and not run_task.done():
+                run_task.cancel()
+
+    async def _stream_run(self, run_input: RunAgentInput) -> None:
+        async for event in self.run_events(run_input):
+            await self.emit(event)
+
+    @ws_handler(
+        summary="Cancel the run",
+        description="Stop the run in flight on this thread.",
+        output_type=AgUiEventMessage,
+    )
+    async def handle_ag_ui_cancel(self, message: AgUiCancelMessage) -> None:
+        run_task = self._run_tasks.get((self.thread_id, message.payload.run_id))
+        # Nothing to stop: the run ended on its own, and its terminal event has
+        # already told every client so.
+        if run_task is None or run_task.done():
+            return
+        run_task.cancel()
+
+    async def on_run_cancelled(self, run_input: RunAgentInput) -> None:
+        """Close a cancelled run, so every client watching it agrees it has ended.
+
+        AG-UI has no event for a run that was stopped. A cancelled run did not
+        produce what it was asked for, so it ends as ``RUN_ERROR`` rather than as a
+        ``RUN_FINISHED`` that a client would read as success.
+        """
+        await self.emit(
+            RunErrorEvent(type=EventType.RUN_ERROR, message="Run cancelled.")
+        )
 
     async def on_run_refused(
         self, run_input: RunAgentInput, active_run_id: str

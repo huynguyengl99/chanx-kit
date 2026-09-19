@@ -29,7 +29,7 @@
       "title": "AG-UI",
       "description": "Serve the AG-UI agent-user interaction protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic: yield events from any agent. Optionally broadcasts a run to every connection on its thread, replaying it to one that joins part-way through.",
       "tier": "core",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "path": "kits/ag_ui",
       "tags": [
         "agent",

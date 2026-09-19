@@ -1,4 +1,4 @@
-from .messages import AgUiEventMessage, AgUiRunMessage
+from .messages import AgUiCancel, AgUiCancelMessage, AgUiEventMessage, AgUiRunMessage
 from .store import (
     ActiveRunStore,
     InMemoryActiveRunStore,
@@ -10,6 +10,8 @@ from .topics import AgUiBaseTopic, AgUiRunTopic, AgUiTopic
 __all__ = [
     "ActiveRunStore",
     "AgUiBaseTopic",
+    "AgUiCancel",
+    "AgUiCancelMessage",
     "AgUiEventMessage",
     "AgUiRunMessage",
     "AgUiRunTopic",
