@@ -5,7 +5,7 @@ description: >-
   AG-UI frontend works unchanged. Provider-agnostic: yield events from any agent.
   Optionally broadcasts a run to every connection on its thread, replaying it to
   one that joins part-way through.
-version: 0.3.1
+version: 0.4.0
 tier: core
 tags: [agent, ag-ui, protocol, streaming]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]

@@ -46,6 +46,37 @@ conversations can share one connection.
 `RUN_STARTED` and `RUN_FINISHED` bracket whatever you yield, and an exception becomes
 `RUN_ERROR`, so `run_agent` only has to produce content events.
 
+## One run at a time
+
+A thread runs one run at a time. Ask it to start another while one is in flight and
+the second is turned away with a `RUN_ERROR` naming the run that holds the thread —
+sent to the connection that asked and to nobody else, so the other tabs watching the
+run in flight are not told it failed.
+
+This matters more here than it does over SSE, where each run is its own request. On a
+websocket several tabs share one conversation and any of them can send, so two runs
+overlapping is ordinary rather than exotic. They cannot be allowed to: a thread buffers
+one run for replay and numbers it from 1, so a second run would reset the sequence
+mid-conversation and leave a joining connection replaying a stream that starts
+part-way through a message.
+
+The claim is per thread, so separate conversations still run concurrently. Override
+`on_run_refused` to answer differently — to log and stay silent, or to queue:
+
+```python
+class MyAgUiTopic(AgUiTopic):
+    async def on_run_refused(
+        self, run_input: RunAgentInput, active_run_id: str
+    ) -> None:
+        log.info("dropped %s, thread busy with %s", run_input.run_id, active_run_id)
+```
+
+!!! warning
+    The default `InMemoryActiveRunStore`, like the replay buffer, is process-local.
+    With more than one worker, two runs landing on different processes can both be
+    told the thread was free. Implement `ActiveRunStore` against Redis — `SET NX` is
+    enough — before running more than one process.
+
 ## Any provider
 
 The kit does not depend on a specific agent framework. `run_agent` is the hook for a
@@ -198,10 +229,12 @@ Set `send_by_alias = False` only if you are deliberately talking to a non-AG-UI 
 | `run_agent(run_input)` | raises | Produce the run's content events |
 | `run_events(run_input)` | brackets `run_agent` | Produce the run's whole stream, lifecycle included |
 | `on_run_error(input, err)` | sends `RUN_ERROR` | Log, or hide provider detail |
+| `on_run_refused(input, id)` | sends `RUN_ERROR` to the asker | Answer a run sent to a busy thread |
 | `new_run_id()` | uuid4 hex | Run ids when the client omits one |
 | `broadcast_run_events` | `False` | Let every connection on the thread watch the run |
 | `send_initial_state()` | sends `transcript()` | State for a new connection, before the replay |
 | `transcript()` | `None` | The conversation to show a reconnecting client |
 | `send_transcript` | `True` | Turn off for a client that keeps its own messages |
 | `run_event_store` | `InMemoryRunEventStore()` | Where a run is buffered for replay |
+| `active_run_store` | `InMemoryActiveRunStore()` | Where a thread's in-flight run is claimed |
 | `send_by_alias` | `True` | Turn off only for a non-AG-UI client |

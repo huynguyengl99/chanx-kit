@@ -1,6 +1,7 @@
-"""The in-flight run's events, kept so a connection joining mid-run can be replayed.
-The in-memory default is process-local; implement :class:`RunEventStore` against a
-shared backend when a run and a connection can land on different processes."""
+"""What a thread knows about the run it is currently running: which run holds it, and
+the run's events so far, kept so a connection joining mid-run can be replayed. The
+in-memory defaults are process-local; implement these protocols against a shared
+backend when a run and a connection can land on different processes."""
 
 from typing import Protocol, runtime_checkable
 
@@ -20,6 +21,48 @@ class RunEventStore(Protocol):
         ...
 
     async def clear(self, thread_id: str) -> None: ...
+
+
+@runtime_checkable
+class ActiveRunStore(Protocol):
+    """Which run, if any, a thread is currently running."""
+
+    async def begin(self, thread_id: str, run_id: str) -> str | None:
+        """Claim the thread for ``run_id``, returning the run already holding it.
+
+        ``None`` means the claim succeeded. An implementation must decide the
+        outcome without awaiting between reading and writing, or two runs racing
+        can both be told the thread was free.
+        """
+        ...
+
+    async def end(self, thread_id: str, run_id: str) -> None:
+        """Release the thread, if ``run_id`` still holds it."""
+        ...
+
+
+class InMemoryActiveRunStore(ActiveRunStore):
+    """Process-local. Not shared across workers."""
+
+    def __init__(self) -> None:
+        self._active: dict[str, str] = {}
+
+    async def begin(self, thread_id: str, run_id: str) -> str | None:
+        active = self._active.get(thread_id)
+        if active is not None:
+            return active
+        self._active[thread_id] = run_id
+        return None
+
+    async def end(self, thread_id: str, run_id: str) -> None:
+        # Only the holder releases it, so a refused run cannot free the thread out
+        # from under the run that is actually in flight.
+        if self._active.get(thread_id) == run_id:
+            del self._active[thread_id]
+
+    def reset(self) -> None:
+        """Drop every claim. Useful between tests."""
+        self._active.clear()
 
 
 class InMemoryRunEventStore(RunEventStore):

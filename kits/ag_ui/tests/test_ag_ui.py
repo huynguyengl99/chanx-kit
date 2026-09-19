@@ -25,7 +25,7 @@ from ...chanx_testing import (
     setup_memory_layer,
 )
 from ..messages import AgUiRunMessage
-from ..store import InMemoryRunEventStore
+from ..store import InMemoryActiveRunStore, InMemoryRunEventStore
 from ..topics import AgUiRunTopic, AgUiTopic
 
 PATH = "/ws/agent"
@@ -67,6 +67,11 @@ class AgUiConsumer(KitConsumer):
 @pytest.fixture(autouse=True)
 def _layer() -> None:
     setup_memory_layer("default")
+    # Topics share one claim registry, so a test leaving a run in flight would
+    # otherwise refuse the next test's run on the same thread.
+    active_runs = AgUiTopic.active_run_store
+    if isinstance(active_runs, InMemoryActiveRunStore):
+        active_runs.reset()
 
 
 @pytest.fixture
@@ -544,3 +549,158 @@ async def test_a_provider_without_a_transcript_sends_nothing_extra(app: Any) -> 
     async with communicator(app, PATH, AgUiConsumer) as comm:
         await comm.subscribe(THREAD)
         await assert_silent(comm)
+
+
+async def test_a_second_run_on_a_busy_thread_is_refused(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    """One run at a time per thread. Two would share the thread's buffer and its
+    sequence, so the second resets the sequence mid-conversation."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-A")), topic=THREAD
+        )
+        assert types_of(await receive_json(comm, 3)) == [
+            "RUN_STARTED",
+            "TEXT_MESSAGE_START",
+            "TEXT_MESSAGE_CONTENT",
+        ]
+
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-B")), topic=THREAD
+        )
+        refusal = (await receive_json(comm, 1))[0]
+
+        assert refusal["payload"]["type"] == "RUN_ERROR"
+        assert "run-A" in refusal["payload"]["message"]
+        # Outside the run's sequence: it is not part of the run in flight.
+        assert "seq" not in refusal
+
+        gate.set()
+
+        # The refused run never displaced the one in flight, which finishes normally.
+        assert types_of(await receive_json(comm, 3)) == [
+            "TEXT_MESSAGE_CONTENT",
+            "TEXT_MESSAGE_END",
+            "RUN_FINISHED",
+        ]
+
+
+async def test_a_refusal_reaches_only_the_connection_that_asked(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    """Broadcasting it would tell every other tab that the run they are watching
+    had failed."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as watcher:
+        await watcher.subscribe(THREAD)
+        async with communicator(broadcast_app, PATH, BroadcastConsumer) as second:
+            await second.subscribe(THREAD)
+
+            await watcher.send_message(
+                AgUiRunMessage(payload=run_input(run_id="run-A")), topic=THREAD
+            )
+            await receive_json(watcher, 3)
+            await receive_json(second, 3)
+
+            await second.send_message(
+                AgUiRunMessage(payload=run_input(run_id="run-B")), topic=THREAD
+            )
+            refusal = (await receive_json(second, 1))[0]
+            assert refusal["payload"]["type"] == "RUN_ERROR"
+
+            # The tab that did not ask hears nothing about it.
+            await assert_silent(watcher)
+
+            gate.set()
+
+
+async def test_a_thread_is_free_again_once_its_run_ends(broadcast_app: Any) -> None:
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-A")), topic=THREAD
+        )
+        assert types_of(await receive_json(comm, 6))[-1] == "RUN_FINISHED"
+
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-B")), topic=THREAD
+        )
+        assert types_of(await receive_json(comm, 6)) == [
+            "RUN_STARTED",
+            "TEXT_MESSAGE_START",
+            "TEXT_MESSAGE_CONTENT",
+            "TEXT_MESSAGE_CONTENT",
+            "TEXT_MESSAGE_END",
+            "RUN_FINISHED",
+        ]
+
+
+async def test_a_failing_run_still_frees_the_thread(app: Any) -> None:
+    """A provider that raises must not strand the thread, or the conversation is
+    dead until the process restarts."""
+    attempts: list[str] = []
+
+    class FlakyTopic(AgUiTopic):
+        async def run_agent(self, run_input: RunAgentInput) -> AsyncIterator[Event]:
+            attempts.append(run_input.run_id)
+            if len(attempts) == 1:
+                raise RuntimeError("provider exploded")
+            yield TextMessageContentEvent(
+                type=EventType.TEXT_MESSAGE_CONTENT, message_id="m", delta="second try"
+            )
+
+    class FlakyConsumer(KitConsumer):
+        channel_layer_alias = "default"
+        topics: ClassVar[list[type[Topic[Any]]]] = [FlakyTopic, AgUiRunTopic]
+
+    flaky_app = build_app({PATH: FlakyConsumer})
+
+    async with communicator(flaky_app, PATH, FlakyConsumer) as comm:
+        await comm.subscribe(THREAD)
+
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-A")), topic=THREAD
+        )
+        assert types_of(await receive_json(comm, 2)) == ["RUN_STARTED", "RUN_ERROR"]
+
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-B")), topic=THREAD
+        )
+        retried = await receive_json(comm, 3)
+
+    assert types_of(retried) == [
+        "RUN_STARTED",
+        "TEXT_MESSAGE_CONTENT",
+        "RUN_FINISHED",
+    ]
+    assert attempts == ["run-A", "run-B"]
+
+
+async def test_two_threads_run_at_the_same_time(broadcast_app: Any) -> None:
+    """The claim is per thread, not global: separate conversations are unaffected."""
+    other = "agui:thread:thread-2"
+
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await comm.subscribe(other, ref="2")
+
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="run-A")), topic=THREAD
+        )
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(thread_id="thread-2", run_id="run-B")),
+            topic=other,
+        )
+
+        messages = await receive_json(comm, 12)
+
+    by_thread: dict[str, list[str]] = {}
+    for message in messages:
+        by_thread.setdefault(message["topic"], []).append(message["payload"]["type"])
+
+    assert by_thread[THREAD][0] == "RUN_STARTED"
+    assert by_thread[other][0] == "RUN_STARTED"
+    assert by_thread[THREAD][-1] == "RUN_FINISHED"
+    assert by_thread[other][-1] == "RUN_FINISHED"

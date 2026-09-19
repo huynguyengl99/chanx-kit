@@ -19,7 +19,12 @@ from ag_ui.core import (
 )
 
 from .messages import AgUiEventMessage, AgUiRunMessage
-from .store import InMemoryRunEventStore, RunEventStore
+from .store import (
+    ActiveRunStore,
+    InMemoryActiveRunStore,
+    InMemoryRunEventStore,
+    RunEventStore,
+)
 
 RUN_TERMINAL_EVENTS = frozenset({EventType.RUN_FINISHED, EventType.RUN_ERROR})
 
@@ -58,6 +63,8 @@ class AgUiTopic(AgUiBaseTopic):
     send_transcript: ClassVar[bool] = True
 
     run_event_store: ClassVar[RunEventStore] = InMemoryRunEventStore()
+
+    active_run_store: ClassVar[ActiveRunStore] = InMemoryActiveRunStore()
 
     @property
     def thread_id(self) -> str:
@@ -128,11 +135,41 @@ class AgUiTopic(AgUiBaseTopic):
         run_input = message.payload
         run_input.run_id = run_input.run_id or self.new_run_id()
 
+        # A thread runs one run at a time. Two overlapping runs would share the
+        # thread's event buffer and its sequence, so the second would reset the
+        # sequence mid-conversation and leave a joining connection replaying a
+        # stream that starts part-way through a message.
+        active_run_id = await self.active_run_store.begin(
+            self.thread_id, run_input.run_id
+        )
+        if active_run_id is not None:
+            await self.on_run_refused(run_input, active_run_id)
+            return
+
         try:
             async for event in self.run_events(run_input):
                 await self.emit(event)
         except Exception as error:  # noqa: BLE001 - surfaced to the client as RUN_ERROR
             await self.on_run_error(run_input, error)
+        finally:
+            await self.active_run_store.end(self.thread_id, run_input.run_id)
+
+    async def on_run_refused(
+        self, run_input: RunAgentInput, active_run_id: str
+    ) -> None:
+        """Turn away a run while the thread already has one in flight.
+
+        Answers the asking connection alone, never the thread: the run in flight is
+        unaffected, and broadcasting this would tell every other client watching it
+        that it had failed.
+        """
+        await self.send_run_event(
+            RunErrorEvent(
+                type=EventType.RUN_ERROR,
+                message=f"Thread is already running {active_run_id}.",
+            ),
+            seq=None,
+        )
 
     async def on_run_error(self, run_input: RunAgentInput, error: Exception) -> None:
         """Report a failed run as ``RUN_ERROR``. Override to log or redact."""
