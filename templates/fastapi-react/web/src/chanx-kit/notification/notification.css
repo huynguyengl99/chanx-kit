@@ -1,0 +1,66 @@
+.chanx-notifications {
+  --chanx-bg: var(--panel, #fff);
+  --chanx-line: var(--line, #e3e3e8);
+  --chanx-muted: var(--muted, #6b6b76);
+  --chanx-radius: 10px;
+  --chanx-info: #2f6feb;
+  --chanx-success: #1a7f4b;
+  --chanx-warning: #b7791f;
+  --chanx-error: #b4402f;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: var(--chanx-bg);
+  border: 1px solid var(--chanx-line);
+  border-radius: var(--chanx-radius);
+}
+.chanx-notifications__head { display: flex; align-items: center; justify-content: space-between; }
+.chanx-notifications__head h2 { font-size: 1rem; margin: 0; }
+.chanx-notifications__status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--chanx-muted);
+}
+.chanx-notifications[data-state='open'] .chanx-notifications__status { color: var(--chanx-success); }
+.chanx-notifications[data-state='closed'] .chanx-notifications__status { color: var(--chanx-error); }
+.chanx-notifications__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 8rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.chanx-notifications__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  align-items: baseline;
+  padding: 0.45rem 0.6rem;
+  border-left: 3px solid var(--chanx-info);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--chanx-line) 35%, transparent);
+  font-size: 0.9rem;
+}
+.chanx-notifications__item[data-level='success'] { border-left-color: var(--chanx-success); }
+.chanx-notifications__item[data-level='warning'] { border-left-color: var(--chanx-warning); }
+.chanx-notifications__item[data-level='error'] { border-left-color: var(--chanx-error); }
+.chanx-notifications__topic { color: var(--chanx-muted); margin-left: auto; }
+.chanx-notifications__empty { color: var(--chanx-muted); font-size: 0.9rem; }
+.chanx-notifications__ack {
+  align-self: flex-start;
+  font: inherit;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--chanx-line);
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.chanx-notifications__ack:disabled { opacity: 0.45; cursor: not-allowed; }

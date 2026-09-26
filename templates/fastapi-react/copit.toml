@@ -1,0 +1,16 @@
+target = "vendor"
+
+[registries.chanx-kit]
+source = "github:huynguyengl99/chanx-kit@v0.3.1"
+target = "app/ws_kits"
+variants = ["fastapi"]
+
+[[sources]]
+path = "app/ws_kits/notification"
+source = "github:huynguyengl99/chanx-kit@v0.3.1/kits/notification"
+ref = "v0.3.1"
+commit = "0e0d46b486534912b1aaf9508f79b4d074132365"
+copied_at = "2026-09-26T14:46:57Z"
+component = "chanx-kit:notification"
+component_version = "0.1.0"
+variants = ["fastapi"]

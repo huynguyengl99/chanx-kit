@@ -1,0 +1,25 @@
+{
+  "name": "chanx-app-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "cd .. && uv run python -m app.asyncapi > web/asyncapi.json && cd web && chanx-codegen asyncapi.json -o src/generated",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@chanx-js/client": "^0.1.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@chanx-js/codegen": "^0.1.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0"
+  }
+}

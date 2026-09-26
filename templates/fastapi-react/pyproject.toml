@@ -1,0 +1,20 @@
+[dependency-groups]
+dev = [
+  "ruff>=0.11.3"
+]
+
+[project]
+dependencies = [
+  "chanx[fast_channels]>=2.10.2,<3",
+  "fast-channels[redis]>=1.0.2",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.35.0"
+]
+description = "A FastAPI + React app wired to chanx and chanx-js, ready for ChanX Kit."
+name = "chanx-app"
+readme = "README.md"
+requires-python = ">=3.11"
+version = "0.1.0"
+
+[tool.uv]
+package = false

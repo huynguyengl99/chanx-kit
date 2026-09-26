@@ -1,0 +1,6 @@
+# Redis for cross-process delivery: REDIS_URL=redis://localhost:6399/0
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6399:6379"
