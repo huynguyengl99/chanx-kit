@@ -42,9 +42,26 @@ Use cases:
 - Binary and audio streaming (planned)
 - And more ...
 
+## Start a new project
+
+A FastAPI backend and a React client with the notification kit already wired end to end,
+the client typed from the server's schema:
+
+```bash
+uvx copit create gh:huynguyengl99/chanx-kit@main/templates/fastapi-react my-app
+```
+
+No copit? `npx tiged huynguyengl99/chanx-kit/templates/fastapi-react my-app` copies the
+same folder. Either way the project comes with its own `copit.toml`, so adding kits works
+from the first `cd`.
+
+Its [README](templates/fastapi-react/README.md) takes it from there: two commands to run
+it, and one to add the next kit.
+
 ## Getting started
 
-**Install chanx**, if you have not yet. It is the only package a kit needs:
+To add kits to a project you already have, **install chanx**, if you have not yet. It is
+the only package a kit needs:
 
 ```bash
 pip install "chanx[fast_channels]"    # FastAPI and other ASGI apps
