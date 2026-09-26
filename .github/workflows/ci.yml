@@ -100,6 +100,49 @@ jobs:
       - run: git diff --exit-code sandbox/ui/src/generated
       - run: npm run --prefix sandbox/ui typecheck
 
+  template:
+    name: Starter template
+    runs-on: ubuntu-latest
+    env:
+      TEMPLATE: templates/fastapi-react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: templates/fastapi-react/web/package-lock.json
+      - name: Lockfiles are current
+        run: uv lock --check --project "$TEMPLATE"
+      # Outside the repo, as a user would get it.
+      - name: Create a project from the template
+        run: |
+          APP="$RUNNER_TEMP/app"
+          cp -r "$TEMPLATE" "$APP"
+          echo "APP=$APP" >> "$GITHUB_ENV"
+      - run: uv sync
+        working-directory: ${{ env.APP }}
+      - run: npm ci --prefix web
+        working-directory: ${{ env.APP }}
+      - name: The committed client matches the server's schema
+        working-directory: ${{ env.APP }}
+        run: |
+          npm run --prefix web gen
+          diff -r web/src/generated "$GITHUB_WORKSPACE/$TEMPLATE/web/src/generated"
+      - name: Typecheck and build the UI
+        run: npm run --prefix web build
+        working-directory: ${{ env.APP }}
+      - name: Drive the running app through chanx-js
+        working-directory: ${{ env.APP }}
+        run: |
+          uv run uvicorn app.main:app --port 8000 &
+          for _ in $(seq 1 30); do curl -sf http://127.0.0.1:8000/asyncapi.json > /dev/null && break; sleep 1; done
+          node "$GITHUB_WORKSPACE/scripts/template_smoke.mjs" . http://127.0.0.1:8000
+
   docs:
     name: Docs build
     runs-on: ubuntu-latest
@@ -125,6 +168,6 @@ jobs:
           python-version: "3.13"
       - name: Install
         run: uv sync
-      - run: uv run ruff check src kits scripts tests sandbox docs
-      - run: uv run ruff format --check src kits scripts tests sandbox docs
+      - run: uv run ruff check src kits scripts tests sandbox docs templates
+      - run: uv run ruff format --check src kits scripts tests sandbox docs templates
       - run: uv run pyright

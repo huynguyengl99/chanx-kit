@@ -5,7 +5,8 @@
     "tests",
     "sandbox",
     "src",
-    "docs"
+    "docs",
+    "templates/fastapi-react/app"
   ],
   "exclude": [
     "**/__pycache__",
@@ -58,6 +59,12 @@
     },
     {
       "root": "src"
+    },
+    {
+      "root": "templates/fastapi-react",
+      "extraPaths": [
+        "templates/fastapi-react"
+      ]
     }
   ],
   "reportUnusedFunction": false,
