@@ -551,7 +551,7 @@ dev-fastapi = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0" },
 ]
 docs = [
-    { name = "copit", specifier = ">=0.6" },
+    { name = "copit", specifier = ">=0.7" },
     { name = "jsonschema", specifier = ">=4.21" },
     { name = "mkdocs", specifier = ">=1.6" },
     { name = "mkdocs-gen-files", specifier = ">=0.5" },
@@ -569,14 +569,14 @@ lint = [
     { name = "ruff", specifier = ">=0.11.3,<0.12" },
 ]
 registry = [
-    { name = "copit", specifier = ">=0.6" },
+    { name = "copit", specifier = ">=0.7" },
     { name = "jsonschema", specifier = ">=4.21" },
     { name = "pyyaml", specifier = ">=6.0.0,<7" },
     { name = "types-jsonschema", specifier = ">=4.21" },
     { name = "types-pyyaml", specifier = ">=6.0" },
 ]
 test = [
-    { name = "copit", specifier = ">=0.6" },
+    { name = "copit", specifier = ">=0.7" },
     { name = "coverage", extras = ["toml"], specifier = ">=7.8.0,<8" },
     { name = "jsonschema", specifier = ">=4.21" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
@@ -692,20 +692,20 @@ wheels = [
 
 [[package]]
 name = "copit"
-version = "0.6.0"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4d/82/ea96eadf265b3d7bc7aa467dd28718c87e635e1fbd533b85346026e8c9c0/copit-0.6.0.tar.gz", hash = "sha256:723588a50259f7bb1efd27a14ea2aa688fa6080b28a155278accca8ffb4963f9", size = 156625, upload-time = "2026-08-31T08:12:12.458Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/79/5aeef7e93c44303b547c9295445e0d5b89bdb297606ee0306a24e31c6633/copit-0.7.0.tar.gz", hash = "sha256:bee10a2db702efd1d52c1d3845432bc1225d7dcf7f54183b5e5b1bb7067ee06e", size = 164678, upload-time = "2026-09-26T16:52:03.516Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/b9/8606b510f2269461b352925870e3f3ac74353832f9e27979ed54a03ac296/copit-0.6.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:af5c054ce33f157b09b15cbf29276a05e635b571dd1be3894c14a50c1ed2474b", size = 4188544, upload-time = "2026-08-31T08:11:55.749Z" },
-    { url = "https://files.pythonhosted.org/packages/19/90/e6e8a6918ea8de5b385aed5c4c69bb7edc8717721976e8d5bf41edcebb5c/copit-0.6.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:47a06441f2a0eded9419993b2b274c807e63010c23a7cbdf14bc5eba8d842fdb", size = 3943531, upload-time = "2026-08-31T08:11:57.954Z" },
-    { url = "https://files.pythonhosted.org/packages/57/16/f32da841312a5fd8e2c3117422c689da0f585e8103e0ba500b3d2f6e9c00/copit-0.6.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:684eafc674c43d7bd1609db5bab35bd3817a8774d6dfe6a7a562c73fe249976d", size = 4076917, upload-time = "2026-08-31T08:11:59.385Z" },
-    { url = "https://files.pythonhosted.org/packages/e0/75/f1a57ba848114ff9d9c99e4fb2eeac2182bbdf703fb09263b4e563b1e70c/copit-0.6.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:28815a1e529ce3ca0b12f3b2af0915360524f211a96164eb7711e4cc1468be2d", size = 4260219, upload-time = "2026-08-31T08:12:01.015Z" },
-    { url = "https://files.pythonhosted.org/packages/0d/c7/30e80a4e12a13a576f75872099eab8cdd40c8df60d97b87c7531e460b875/copit-0.6.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:0162f184cff31b5928eab4a7a8790b1ba78d91594c679ccb2c6c77e6064fdcef", size = 3894666, upload-time = "2026-08-31T08:12:02.846Z" },
-    { url = "https://files.pythonhosted.org/packages/4d/d3/7b32b8da7c672473e0bc1fe012986cd9bb1fb67f5deffcab2010aa9ba388/copit-0.6.0-py3-none-manylinux_2_28_armv7l.whl", hash = "sha256:99bf12ee3552a03e90dc6c7bf3a4d2788e227dbf477167d24dfc5b7c0837c706", size = 3440813, upload-time = "2026-08-31T08:12:04.376Z" },
-    { url = "https://files.pythonhosted.org/packages/4f/3f/4dfa2fb3fbfe8cd1565b57b1c313ec8ca9abeff3f48d28747d5874025d80/copit-0.6.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:0c6935b508c1522daf8adde0d337e93ebfd67b0311f40bd7ddb6626c80623d15", size = 3928264, upload-time = "2026-08-31T08:12:06.035Z" },
-    { url = "https://files.pythonhosted.org/packages/73/9c/43998d223ae70fe30f6a498489036b8ce00eaa0dc216787e1c24129a40f0/copit-0.6.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:957d00e9501b9e5f18a039c52f6326a378baeb531b93085617a2c8eee7e4e59e", size = 4347193, upload-time = "2026-08-31T08:12:07.919Z" },
-    { url = "https://files.pythonhosted.org/packages/e9/c1/c87ac3d62ae0a00a393feaca5fa573b7c5ddc24412998ed66859347a7366/copit-0.6.0-py3-none-win_amd64.whl", hash = "sha256:4ff2b0e3bfb3810bf56b8b49d6921f494beffdebd0e2eef2912e904df852751e", size = 3934199, upload-time = "2026-08-31T08:12:09.51Z" },
-    { url = "https://files.pythonhosted.org/packages/07/b1/1a7a979bbf7b7652fe88bbc3eafb1fb570df8bcc7e9a2f486b6f1e16da28/copit-0.6.0-py3-none-win_arm64.whl", hash = "sha256:726dff885ce97435d3d9b60cecf80d7384823f8f6a06e8278b10620a3d7cf1ab", size = 3889246, upload-time = "2026-08-31T08:12:11.152Z" },
+    { url = "https://files.pythonhosted.org/packages/43/7a/b062a33550a0aaff3c3d7a395f32daa5b4205a3bb23146e51cb56a89c6eb/copit-0.7.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:088ed4354144637ab50e8762c59edea6f06930890e49d49135c9ac3b98c3efa0", size = 4330809, upload-time = "2026-09-26T16:51:48.738Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/ae/55becbb1faeee52db92691ea494ef01fa2ad9498e5ab9079f090ef5aa919/copit-0.7.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:829d22cfec579fc1014435a1fe73a820c5c1c333cb271ce02e5a947c97f4c8f5", size = 4087277, upload-time = "2026-09-26T16:51:50.347Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/c9/86da6f1e462fab893bc3c60ae1dcc2d34c0485e394d0abb2d16d96aeaac9/copit-0.7.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:13259e33dcbf009f4ffc710d04068e620c971e7eb636ffff3b467971b243655a", size = 4236838, upload-time = "2026-09-26T16:51:51.642Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/4e/e65bea41bbad8655860560c81954f34aa4bc3e2f579e4973a5c3a5c651b0/copit-0.7.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6eaa7f2ed65181d7895476689891a719c3c66c6d8069f36f147d5e115ac039f4", size = 4407202, upload-time = "2026-09-26T16:51:52.942Z" },
+    { url = "https://files.pythonhosted.org/packages/49/8d/ef413335e7a6e0b7a5d398b34ec6b3de3edf599fb82624b8df81373389ed/copit-0.7.0-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:0ff56cf8614a876201125f515e9f86d62e30040d2de70256e66c9e21424a97af", size = 4043851, upload-time = "2026-09-26T16:51:54.325Z" },
+    { url = "https://files.pythonhosted.org/packages/58/1a/9904ddfeb82f6bbffd6e6056ec5c7c15176c356b6efb22476b473f39b2f1/copit-0.7.0-py3-none-manylinux_2_28_armv7l.whl", hash = "sha256:48f6d6f1c1c7eb7569af8d878192e9d0e6d0e60840ba94d0286c5cfc9c59162b", size = 3564956, upload-time = "2026-09-26T16:51:55.792Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/67/78ef7c3f36bae9036f6bee8a948a0f885c331878a91abe5dd29002489aeb/copit-0.7.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:e8ad4ae17b7883460615b089e0e382b2272db8420413964589b28ed4d95ffb38", size = 4075321, upload-time = "2026-09-26T16:51:57.402Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/c1/f9377cad55d3336258750ec8ebb988be9540f9f96385cfe60f872986de4c/copit-0.7.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:79e299746c16ffe4cccd5320ba25eca2f0b43619df011d9a0fdd01d25867e4f7", size = 4494764, upload-time = "2026-09-26T16:51:59.417Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/b7/2aaa4056eae9986d6abafa7ba9df516b5948fb00621c2b9b1e0e48931b06/copit-0.7.0-py3-none-win_amd64.whl", hash = "sha256:b0810f7ec2cffb4f76967ec27ee5f01e7068753c74aead7639fa6cd88e3a81b2", size = 4071683, upload-time = "2026-09-26T16:52:00.818Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/26/6a349230e87ea53684e40ef593e0334f68bce7b1868d75de63b6f9028a6d/copit-0.7.0-py3-none-win_arm64.whl", hash = "sha256:98b84d9a25f3517257ff1b862a2c22ea5f18c64767116a06eb0a80acae13a0a6", size = 4021016, upload-time = "2026-09-26T16:52:02.393Z" },
 ]
 
 [[package]]

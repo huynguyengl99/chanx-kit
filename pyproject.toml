@@ -45,7 +45,7 @@ lint = [
   "ruff>=0.11.3,<0.12"
 ]
 registry = [
-  "copit>=0.6",
+  "copit>=0.7",
   "jsonschema>=4.21",
   "pyyaml>=6.0.0,<7",
   "types-jsonschema>=4.21",

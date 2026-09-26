@@ -118,11 +118,10 @@ jobs:
           cache-dependency-path: templates/fastapi-react/web/package-lock.json
       - name: Lockfiles are current
         run: uv lock --check --project "$TEMPLATE"
-      # Outside the repo, as a user would get it.
-      - name: Create a project from the template
+      - name: Create a project with copit create
         run: |
           APP="$RUNNER_TEMP/app"
-          cp -r "$TEMPLATE" "$APP"
+          uv run --only-group registry copit create "$TEMPLATE" "$APP"
           echo "APP=$APP" >> "$GITHUB_ENV"
       - run: uv sync
         working-directory: ${{ env.APP }}
