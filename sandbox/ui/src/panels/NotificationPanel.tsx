@@ -1,41 +1,36 @@
 import { useState } from 'react';
+import { useTopics } from '@chanx-js/client/react';
 
-import type {
-  NotificationDemoUserNotificationTopicToClient,
-  NotificationDemoUserNotificationTopicToServer,
-  NotificationPayload,
-} from '../generated';
-import { useTopics } from '../lib/socket';
+import { notifications } from '../generated';
+import type { NotificationPayload } from '../generated';
 
 /** notification kit: fan-out to a user's live connections. */
 type Received = NotificationPayload & { from: string };
+
+const everyone = notifications.topics.broadcastNotificationTopic.with();
 
 export function NotificationPanel({ who }: { who: string }) {
   const [items, setItems] = useState<Received[]>([]);
 
   // Two audiences on one connection: the topic carries which, so the server refuses
   // another user's stream while everyone still receives the broadcast.
-  const topic = `notification:user:${who}`;
-  const everyone = 'notification:all';
+  const mine = notifications.topics.demoUserNotificationTopic.with({ user_id: who });
 
-  const { send, status } = useTopics<
-    NotificationDemoUserNotificationTopicToClient,
-    NotificationDemoUserNotificationTopicToServer
-  >(
-    `/ws/notifications?as=${encodeURIComponent(who)}`,
-    [topic, everyone],
-    (message, from) => {
-      if (message.action === 'notification') {
+  const { sendTopic, status } = useTopics(notifications, {
+    queryParams: { as: who },
+    topics: [mine, everyone],
+    buffer: 'none',
+    on: {
+      notification: (message, { topic }) =>
         setItems((current) =>
-          [{ ...message.payload, from }, ...current].slice(0, 20),
-        );
-      }
+          [{ ...message.payload, from: topic ?? '' }, ...current].slice(0, 20),
+        ),
     },
-  );
+  });
 
   const ackAll = () => {
     if (items.length === 0) return;
-    send(topic, {
+    sendTopic(mine.topic, {
       action: 'notification_ack',
       payload: { ids: items.map((n) => n.id!) },
     });
@@ -57,7 +52,7 @@ export function NotificationPanel({ who }: { who: string }) {
           <li key={item.id}>
             <span className="who">{item.title}</span>
             {item.body ? `: ${item.body}` : ''}
-            <em>{item.from === everyone ? ' (everyone)' : ' (just you)'}</em>
+            <em>{item.from === everyone.topic ? ' (everyone)' : ' (just you)'}</em>
           </li>
         ))}
       </ul>

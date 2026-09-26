@@ -46,9 +46,15 @@ jobs:
 
       # The wire contract is frozen by the committed TypeScript types; regenerating them
       # here catches a dependency upgrade that changes schema emission.
+      - uses: actions/setup-node@v4
+        if: matrix.backend == 'fastapi'
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: sandbox/ui/package-lock.json
       - name: Check the wire contract still matches
         if: matrix.backend == 'fastapi'
         run: |
-          uv run python scripts/gen_ts_client.py --app sandbox.main:app \
-            -o sandbox/ui/src/generated
+          npm ci --prefix sandbox/ui
+          npm run --prefix sandbox/ui gen
           git diff --exit-code sandbox/ui/src/generated

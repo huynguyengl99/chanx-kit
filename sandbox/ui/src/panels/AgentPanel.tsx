@@ -1,10 +1,7 @@
 import { useRef, useState } from 'react';
+import { useTopic } from '@chanx-js/client/react';
 
-import type {
-  AgentDemoAgUiTopicToClient,
-  AgentDemoAgUiTopicToServer,
-} from '../generated';
-import { useTopics } from '../lib/socket';
+import { agent } from '../generated';
 
 /**
  * ag-ui kit: the AG-UI protocol over a websocket.
@@ -19,42 +16,39 @@ export function AgentPanel() {
   const [running, setRunning] = useState(false);
   const [lastEvent, setLastEvent] = useState('');
   const threadId = useRef(crypto.randomUUID());
+
   // A thread is the topic, so several conversations could share this connection.
-  const topic = `agui:thread:${threadId.current}`;
-
-  const { send, status } = useTopics<
-    AgentDemoAgUiTopicToClient,
-    AgentDemoAgUiTopicToServer
-  >(
-    '/ws/agent',
-    [topic],
-    (message) => {
-      if (message.action !== 'ag_ui_event') return;
-
-      const event = message.payload;
-      setLastEvent(event.type);
-
-      switch (event.type) {
-        case 'RUN_STARTED':
-          setAnswer('');
-          setRunning(true);
-          break;
-        case 'TEXT_MESSAGE_CONTENT':
-          setAnswer((current) => current + event.delta);
-          break;
-        case 'RUN_ERROR':
-          setAnswer(`Error: ${event.message}`);
-          setRunning(false);
-          break;
-        case 'RUN_FINISHED':
-          setRunning(false);
-          break;
-      }
+  const { send, status } = useTopic(
+    agent,
+    agent.topics.demoAgUiTopic.with({ thread_id: threadId.current }),
+    {
+      buffer: 'none',
+      on: {
+        ag_ui_event: ({ payload: event }) => {
+          setLastEvent(event.type);
+          switch (event.type) {
+            case 'RUN_STARTED':
+              setAnswer('');
+              setRunning(true);
+              break;
+            case 'TEXT_MESSAGE_CONTENT':
+              setAnswer((current) => current + event.delta);
+              break;
+            case 'RUN_ERROR':
+              setAnswer(`Error: ${event.message}`);
+              setRunning(false);
+              break;
+            case 'RUN_FINISHED':
+              setRunning(false);
+              break;
+          }
+        },
+      },
     },
   );
 
   const ask = () => {
-    send(topic, {
+    send({
       action: 'ag_ui_run',
       payload: {
         threadId: threadId.current,

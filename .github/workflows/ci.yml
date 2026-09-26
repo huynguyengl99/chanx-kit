@@ -94,12 +94,10 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: sandbox/ui/package-lock.json
-      - name: Generate TypeScript types from the sandbox AsyncAPI schema
-        run: |
-          uv run python scripts/gen_ts_client.py \
-            --app sandbox.main:app -o sandbox/ui/src/generated
-      - run: git diff --exit-code sandbox/ui/src/generated
       - run: npm ci --prefix sandbox/ui
+      - name: Generate the client from the sandbox AsyncAPI schema
+        run: npm run --prefix sandbox/ui gen
+      - run: git diff --exit-code sandbox/ui/src/generated
       - run: npm run --prefix sandbox/ui typecheck
 
   docs:

@@ -1,17 +1,12 @@
 import { useState } from 'react';
+import { useTopics } from '@chanx-js/client/react';
 
-import type {
-  ChatEntry,
-  PresenceMember,
-  RoomDemoChatTopicToClient,
-  RoomDemoChatTopicToServer,
-  RoomDemoPresenceTopicToClient,
-} from '../generated';
-import { useTopics } from '../lib/socket';
+import { room } from '../generated';
+import type { ChatEntry, PresenceMember } from '../generated';
 
 const ROOM = 'general';
-const CHAT = `chat:${ROOM}`;
-const PRESENCE = `presence:${ROOM}`;
+const chat = room.topics.demoChatTopic.with({ room: ROOM });
+const presence = room.topics.demoPresenceTopic.with({ scope: ROOM });
 
 /** Two independent kits — chat and presence — over a single connection. */
 export function RoomPanel({ who }: { who: string }) {
@@ -19,44 +14,30 @@ export function RoomPanel({ who }: { who: string }) {
   const [members, setMembers] = useState<PresenceMember[]>([]);
   const [draft, setDraft] = useState('');
 
-  const { send, status } = useTopics<
-    RoomDemoChatTopicToClient | RoomDemoPresenceTopicToClient,
-    RoomDemoChatTopicToServer
-  >(
-    `/ws/rooms/${ROOM}?as=${encodeURIComponent(who)}`,
-    [CHAT, PRESENCE],
-    (message) => {
-      // The generated union narrows on `action`, so each branch below knows its
-      // payload shape without a cast.
-      switch (message.action) {
-        case 'chat_backlog':
-          setEntries(message.payload.entries);
-          break;
-        case 'chat_message':
-          setEntries((current) => [...current, message.payload]);
-          break;
-        case 'presence_state':
-          setMembers(message.payload.members);
-          break;
-        case 'presence_join':
-          setMembers((current) =>
-            current.some((member) => member.id === message.payload.member.id)
-              ? current
-              : [...current, message.payload.member],
-          );
-          break;
-        case 'presence_leave':
-          setMembers((current) =>
-            current.filter((member) => member.id !== message.payload.member.id),
-          );
-          break;
-      }
+  const { sendTopic, status } = useTopics(room, {
+    params: { room: ROOM },
+    queryParams: { as: who },
+    topics: [chat, presence],
+    buffer: 'none',
+    // Keyed by action and typed from the joined topics, so each payload needs no cast.
+    on: {
+      chat_backlog: (message) => setEntries(message.payload.entries),
+      chat_message: (message) => setEntries((current) => [...current, message.payload]),
+      presence_state: (message) => setMembers(message.payload.members),
+      presence_join: ({ payload }) =>
+        setMembers((current) =>
+          current.some((member) => member.id === payload.member.id)
+            ? current
+            : [...current, payload.member],
+        ),
+      presence_leave: ({ payload }) =>
+        setMembers((current) => current.filter((member) => member.id !== payload.member.id)),
     },
-  );
+  });
 
   const post = () => {
     if (!draft.trim()) return;
-    send(CHAT, { action: 'chat_send', payload: { body: draft } });
+    sendTopic(chat.topic, { action: 'chat_send', payload: { body: draft } });
     setDraft('');
   };
 
