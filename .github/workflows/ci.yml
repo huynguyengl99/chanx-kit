@@ -138,7 +138,9 @@ jobs:
       - name: Drive the running app through chanx-js
         working-directory: ${{ env.APP }}
         run: |
-          uv run uvicorn app.main:app --port 8000 &
+          # Not via `uv run`: a live uv process holds the cache lock setup-uv prunes after.
+          .venv/bin/uvicorn app.main:app --port 8000 &
+          trap 'kill $!' EXIT
           for _ in $(seq 1 30); do curl -sf http://127.0.0.1:8000/asyncapi.json > /dev/null && break; sleep 1; done
           node "$GITHUB_WORKSPACE/scripts/template_smoke.mjs" . http://127.0.0.1:8000
 
