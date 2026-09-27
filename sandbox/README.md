@@ -79,7 +79,7 @@ one is silent, since a broadcast with no subscribers is not an error.
 | `layers.py` | Redis when `REDIS_URL` is set, in-memory otherwise |
 | `__main__.py` | `python -m sandbox`, with the startup banner |
 | `send_notification.py`, `worker.py` | Publishing from outside the web process |
-| `ui/` | The React demo, with `src/generated/` written by the codegen |
+| `ui/` | The React demo, with `src/generated/` written by the codegen and `src/chanx-kit/` installed from the UI registry by copit |
 
 ## After changing a kit
 

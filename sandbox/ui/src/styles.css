@@ -5,6 +5,12 @@
   --line: #e3e3e8;
   --muted: #6b6b76;
   --accent: #2f6feb;
+  /* One set of variables themes every chanx-kit UI. */
+  --chanx-bg: var(--panel);
+  --chanx-line: var(--line);
+  --chanx-muted: var(--muted);
+  --chanx-accent: var(--accent);
+  --chanx-radius: 12px;
 }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #0f0f12; --panel: #17171c; --line: #2a2a33; --muted: #9a9aa6; }
@@ -46,3 +52,5 @@ button.ghost { background: transparent; border-color: var(--line); color: inheri
 .chip { font-size: .78rem; padding: .15rem .5rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .answer { white-space: pre-wrap; min-height: 6rem; font-size: .9rem; }
 .hint { color: var(--muted); font-size: .8rem; margin: 0; }
+.stack { display: flex; flex-direction: column; gap: .6rem; }
+.log .error { color: #b4402f; }

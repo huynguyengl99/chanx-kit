@@ -1,0 +1,71 @@
+/* Default look for <NotificationFeed>. Theme every chanx-kit UI at once by setting the
+   --chanx-* variables at :root; the fallbacks are system colours, so light and dark
+   work unconfigured. */
+.chanx-notifications {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  font: var(--chanx-font, inherit);
+  color: var(--chanx-fg, CanvasText);
+  background: var(--chanx-bg, Canvas);
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: var(--chanx-radius, 10px);
+}
+.chanx-notifications__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.chanx-notifications__head h2 { font-size: 1rem; margin: 0; }
+.chanx-notifications__status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--chanx-muted, GrayText);
+}
+.chanx-notifications[data-state='open'] .chanx-notifications__status { color: var(--chanx-success, #1a7f4b); }
+.chanx-notifications[data-state='closed'] .chanx-notifications__status { color: var(--chanx-error, #c0392b); }
+.chanx-notifications__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-height: 8rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.chanx-notifications__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  align-items: baseline;
+  padding: 0.45rem 0.6rem;
+  border-left: 3px solid var(--chanx-info, #2f6feb);
+  border-radius: 6px;
+  background: color-mix(in srgb, CanvasText 5%, transparent);
+  font-size: 0.9rem;
+}
+.chanx-notifications__item[data-level='success'] { border-left-color: var(--chanx-success, #1a7f4b); }
+.chanx-notifications__item[data-level='warning'] { border-left-color: var(--chanx-warning, #b7791f); }
+.chanx-notifications__item[data-level='error'] { border-left-color: var(--chanx-error, #c0392b); }
+.chanx-notifications__topic { color: var(--chanx-muted, GrayText); margin-left: auto; }
+.chanx-notifications__empty { color: var(--chanx-muted, GrayText); font-size: 0.9rem; }
+.chanx-notifications__dismiss {
+  border: 0;
+  background: none;
+  color: var(--chanx-muted, GrayText);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+}
+.chanx-notifications__ack {
+  align-self: flex-start;
+  font: inherit;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.chanx-notifications__ack:disabled { opacity: 0.45; cursor: not-allowed; }
+.chanx-notifications :focus-visible { outline: 2px solid var(--chanx-accent, Highlight); outline-offset: 2px; }

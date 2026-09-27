@@ -1,67 +1,27 @@
-import { useState } from 'react';
-import { useTopics } from '@chanx-js/client/react';
-
+import { NotificationFeed, useNotifications } from '../chanx-kit/notification/react';
 import { notifications } from '../generated';
-import type { NotificationPayload } from '../generated';
-
-/** notification kit: fan-out to a user's live connections. */
-type Received = NotificationPayload & { from: string };
 
 const everyone = notifications.topics.broadcastNotificationTopic.with();
 
+/** notification kit, through the notification UI kit. */
 export function NotificationPanel({ who }: { who: string }) {
-  const [items, setItems] = useState<Received[]>([]);
-
-  // Two audiences on one connection: the topic carries which, so the server refuses
-  // another user's stream while everyone still receives the broadcast.
+  // Two audiences on one connection; the server authorizes each topic.
   const mine = notifications.topics.demoUserNotificationTopic.with({ user_id: who });
-
-  const { sendTopic, status } = useTopics(notifications, {
+  const { items, status, ackAll, dismiss } = useNotifications(notifications, {
     queryParams: { as: who },
     topics: [mine, everyone],
-    buffer: 'none',
-    on: {
-      notification: (message, { topic }) =>
-        setItems((current) =>
-          [{ ...message.payload, from: topic ?? '' }, ...current].slice(0, 20),
-        ),
-    },
+    limit: 20,
   });
 
-  const ackAll = () => {
-    if (items.length === 0) return;
-    sendTopic(mine.topic, {
-      action: 'notification_ack',
-      payload: { ids: items.map((n) => n.id!) },
-    });
-    setItems([]);
-  };
-
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Notifications</h2>
-        <span className="status" data-state={status}>
-          {status}
-        </span>
-      </div>
-
-      <ul className="log">
-        {items.length === 0 && <li>No notifications yet.</li>}
-        {items.map((item) => (
-          <li key={item.id}>
-            <span className="who">{item.title}</span>
-            {item.body ? `: ${item.body}` : ''}
-            <em>{item.from === everyone.topic ? ' (everyone)' : ' (just you)'}</em>
-          </li>
-        ))}
-      </ul>
-
-      <div className="row">
-        <button className="ghost" onClick={ackAll} disabled={items.length === 0}>
-          Acknowledge all
-        </button>
-      </div>
+    <div className="stack">
+      <NotificationFeed
+        items={items}
+        status={status}
+        onAckAll={ackAll}
+        onDismiss={dismiss}
+        describeTopic={(topic) => (topic === everyone.topic ? 'everyone' : 'just you')}
+      />
       <p className="hint">
         Nothing in the browser sends these, that is the point. Trigger one from a
         separate process (needs <code>REDIS_URL</code>, since an in-memory layer cannot
@@ -72,6 +32,6 @@ export function NotificationPanel({ who }: { who: string }) {
         That one reaches every tab. Add <code>--user {who}</code> to address this
         connection alone, which the server authorizes per subscription.
       </p>
-    </section>
+    </div>
   );
 }

@@ -1,0 +1,39 @@
+target = "vendor"
+
+[registries.chanx-kit-ui]
+source = "../.."
+index = "ui/copit-registry.json"
+target = "src/chanx-kit"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/notification"
+source = "../../ui/notification"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:notification"
+component_version = "0.1.0"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/presence"
+source = "../../ui/presence"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:presence"
+component_version = "0.1.0"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/chat"
+source = "../../ui/chat"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:chat"
+component_version = "0.1.0"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/ag-ui"
+source = "../../ui/ag-ui"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:ag-ui"
+component_version = "0.1.0"
+variants = ["react"]
