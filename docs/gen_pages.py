@@ -135,7 +135,13 @@ def rewrite_links(markdown: str) -> str:
 
 def kit_messages(package: str) -> dict[str, tuple[str, dict[str, Any]]]:
     """Message classes a kit defines, keyed by action."""
-    module = importlib.import_module(f"kits.{package}")
+    try:
+        module = importlib.import_module(f"kits.{package}")
+    except ModuleNotFoundError as error:
+        # A bridge kit whose library the docs build does not install.
+        if (error.name or "").startswith("kits"):
+            raise
+        return {}
     found: dict[str, tuple[str, dict[str, Any]]] = {}
 
     for _, obj in inspect.getmembers(module, inspect.isclass):
@@ -185,6 +191,15 @@ def kit_page(name: str, component: dict[str, Any]) -> str:
     if requires:
         links = ", ".join(f"[`{r}`]({r}.md)" for r in requires)
         facts.append(f"| **Requires kits** | {links} |")
+    if parts := component.get("parts"):
+        listed = ", ".join(
+            f"`{part}` ({', '.join(f for f in spec['include'] if '/' not in f)})"
+            for part, spec in parts.items()
+        )
+        facts.append(
+            f"| **Parts** | {listed}: all by default, "
+            f"or `copit add @chanx-kit/{name} --only <part>` |"
+        )
     facts += contract_facts(component, ui=False)
     if dependencies:
         facts.append(
@@ -348,6 +363,9 @@ with mkdocs_gen_files.open("SUMMARY.md", "w") as handle:
             [
                 "* [Home](index.md)",
                 "* [Getting started](getting-started.md)",
+                "* Guides",
+                "    * [UI kits](ui-kits.md)",
+                "    * [Add voice](voice.md)",
                 *nav_lines,
                 "* Contributing",
                 "    * [Checklist and workflow](contributing.md)",

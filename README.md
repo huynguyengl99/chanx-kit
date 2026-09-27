@@ -33,13 +33,17 @@ uvx copit add @chanx-kit/notification
   is tested on both backends and type-checked in strict mode.
 - **Composable.** Kits are listed on a consumer rather than inherited, so any number of
   them work side by side, and each one still works alone.
+- **UI kits too.** The browser half, React first, installed the same way. Each binds to
+  the messages a kit speaks rather than to one server kit, so one UI works with every
+  provider.
 
 Use cases:
 
 - AG-UI agents, and bi-directional agent streaming
 - Notifications
 - Room chat with replayed history and live presence
-- Binary and audio streaming (planned)
+- Voice: live captions, text to speech, and a voice agent you can interrupt, with
+  Deepgram, ElevenLabs or OpenAI
 - And more ...
 
 ## Start a new project
@@ -73,7 +77,7 @@ records where kits come from and where they land, in `copit.toml`:
 
 ```bash
 uvx copit init
-uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.3.1 --to app/ws_kits
+uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.4.0 --to app/ws_kits
 ```
 
 **Add a kit.** The source is copied into `app/ws_kits/notification/`, along with any kit
@@ -113,9 +117,12 @@ covers subscribing from a client, composing several kits, and overriding a kit's
 | [`room_chat`](kits/room_chat) | A chat room: history replayed on connect, plus a live roster. Pluggable store |
 | [`ag_ui`](kits/ag_ui) | Serve the AG-UI protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic |
 | [`pydantic_ai_ag_ui`](kits/pydantic_ai_ag_ui) | Run a Pydantic AI agent over AG-UI, approvals included, with the conversation kept server-side |
+| [`deepgram`](kits/deepgram) | Speech to text and text to speech with Deepgram; ElevenLabs and OpenAI kits work the same way |
+| [`voice_agent`](kits/voice_agent) | Talk to any AG-UI agent: spoken replies as they stream, interrupted by speaking |
 
 Presence, a conversation store, a Redis-backed roster, a Django-backed message store and
-the test harness are kits too. See [kits/](kits) in this repository, or
+the test harness are kits too, and so is the browser side in [ui/](ui). See [kits/](kits)
+in this repository, or
 **[browse them all](https://huynguyengl99.github.io/chanx-kit/kits/)** with their
 messages, hooks and caveats.
 

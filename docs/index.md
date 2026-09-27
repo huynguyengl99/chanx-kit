@@ -78,5 +78,11 @@ await UserNotificationTopic.notify_user(
 )
 ```
 
+## Voice, too
+
+Microphone to captions, text to speech for every listener, and an AG-UI agent you can
+talk to and interrupt. Deepgram, ElevenLabs or OpenAI, with the key on your server,
+and one base class to switch. [Add voice](voice.md).
+
 [Browse the kits](kits/index.md){ .md-button .md-button--primary }
 [Getting started](getting-started.md){ .md-button }

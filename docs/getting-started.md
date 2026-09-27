@@ -53,14 +53,14 @@ built-in list of registries, so you tell it about this one once and it remembers
 
 ```bash
 uvx copit init
-uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.3.1 --to app/ws_kits
+uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.4.0 --to app/ws_kits
 ```
 
 That records where the registry lives, where kits should land, and pins the version:
 
 ```toml
 [registries.chanx-kit]
-source = "github:huynguyengl99/chanx-kit@v0.3.1"
+source = "github:huynguyengl99/chanx-kit@v0.4.0"
 target = "app/ws_kits"
 ```
 
@@ -76,7 +76,9 @@ installs any Python packages it declares, and pulls in any kit it requires.
 !!! tip "Useful flags"
     `--dry-run` shows the plan without writing. `-y` skips the confirmation.
     `--with tests` also copies the kit's tests, which is worth it if you plan to modify
-    it. `--variant django` or `--variant fastapi` selects framework-specific files.
+    it. `--variant django` or `--variant fastapi` selects framework-specific files
+    (copit 0.9 detects it from `pyproject.toml`). `--only <part>` installs one part of a
+    kit that has several, such as a provider's `stt`.
 
 Later, to pick up upstream fixes:
 
@@ -151,5 +153,7 @@ Each kit's page lists its hooks and their defaults.
 
 ## Next
 
+- [UI kits](ui-kits.md): the browser half, React first
+- [Add voice](voice.md): captions, spoken replies and a voice agent
 - [Browse the kits](kits/index.md)
 - [Authoring a kit](authoring-a-kit.md): what a topic is made of, and why

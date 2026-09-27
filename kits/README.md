@@ -33,6 +33,32 @@ search and generated message schemas.
 | Kit | Tier | What it does |
 |---|---|---|
 | [`ag_ui`](ag_ui) | core | Serve the AG-UI protocol over a websocket, for any AG-UI frontend. Provider-agnostic |
+| [`pydantic_ai_ag_ui`](pydantic_ai_ag_ui) | contrib | A Pydantic AI agent over AG-UI, conversation kept server-side |
+
+## Voice
+
+Contracts first, providers second: every provider kit passes its contract's shared test
+suite, so switching provider is one class and the UI does not change.
+
+| Kit | Tier | What it does |
+|---|---|---|
+| [`media_stream_in`](media_stream_in) | core | Bytes over JSON, chunks back in order, a bounded real-time intake |
+| [`audio_stream_in`](audio_stream_in) | core | Microphone audio in, transcripts out: defines `transcriber@1` |
+| [`media_stream_out`](media_stream_out) | core | Server-side producers in order per session, replay for late joiners |
+| [`audio_stream_out`](audio_stream_out) | core | Text in, audio out to every listener: defines `synthesizer@1` |
+| [`voice_agent`](voice_agent) | core | Talk to any AG-UI agent: turns, spoken replies, barge-in |
+
+One kit per provider, with a speech-to-text part (`stt`) and a text-to-speech part
+(`tts`). Both install by default; `--only stt` or `--only tts` keeps one, and leaves out
+the base kit only the other needs.
+
+| Kit | Tier | What it does |
+|---|---|---|
+| [`fake_voice`](fake_voice) | core | Scripted transcripts and tone-per-word speech, no key: demos, UI work, CI |
+| [`deepgram`](deepgram) | contrib | Deepgram Nova speech-to-text and Aura text-to-speech |
+| [`elevenlabs`](elevenlabs) | contrib | ElevenLabs Scribe realtime and streaming text-to-speech |
+| [`openai`](openai) | contrib | OpenAI realtime transcription and text-to-speech |
+| [`pipecat_bridge`](pipecat_bridge) | contrib | Any Pipecat speech-to-text service behind `transcriber@1` |
 
 ## Django only
 
