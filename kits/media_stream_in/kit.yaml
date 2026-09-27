@@ -1,0 +1,13 @@
+name: media-stream-in
+title: Media stream in
+description: >-
+  The plumbing for media a client streams in: bytes that travel as base64, chunks put
+  back in order with gaps reported, and a bounded real-time intake with keepalive and
+  idle handling. The base the audio kits build on.
+version: 0.1.0
+tier: core
+tags: [media, streaming, audio, bytes]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+dependencies:
+  - "chanx>=2.10.2,<3"
