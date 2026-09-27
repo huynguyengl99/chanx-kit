@@ -100,6 +100,30 @@ jobs:
       - run: git diff --exit-code sandbox/ui/src/generated
       - run: npm run --prefix sandbox/ui typecheck
 
+  ui-kits:
+    name: UI kits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci --prefix ui
+      # Each contract.ts is regenerated from its server kit, so a server change that
+      # breaks a UI kit's contract fails here rather than in someone's app.
+      - name: Contracts match the server kits
+        run: uv run --extra fastapi --group dev-fastapi python scripts/contracts.py check
+      - run: npm run --prefix ui typecheck
+      - run: npm test --prefix ui
+      - name: The shadcn index builds
+        run: uv run python scripts/shadcn.py "$RUNNER_TEMP/r"
+
   template:
     name: Starter template
     runs-on: ubuntu-latest

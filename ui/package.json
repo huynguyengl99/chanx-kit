@@ -1,0 +1,19 @@
+{
+  "name": "chanx-kit-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chanx-js/client": "^0.1.2",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@chanx-js/codegen": "^0.1.2",
+    "@types/react": "^19.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

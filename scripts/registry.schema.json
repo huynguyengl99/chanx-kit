@@ -50,6 +50,26 @@
       },
       "uniqueItems": true
     },
+    "detect": {
+      "description": "Per variant, the packages that mark a project as using it. `copit registry add` without `--variant` selects every variant whose packages the project's package.json or pyproject.toml already depends on.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "packages"
+        ]
+      }
+    },
     "generated_at": {
       "type": "string"
     },

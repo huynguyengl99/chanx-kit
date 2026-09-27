@@ -13,6 +13,8 @@ requires:
   - ag-ui
   - conversation-store
 
+implements: [ag-ui@1]
+
 dependencies:
   # 2.10.2 emits a discriminated union in the form AsyncAPI accepts;
   # earlier versions make the generated document invalid.

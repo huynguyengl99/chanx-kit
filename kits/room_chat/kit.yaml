@@ -11,6 +11,10 @@ authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 requires:
   - presence
 
+# The messages UI kits bind to; see registry-conventions.md.
+defines: chat@1
+contract_topic: RoomChatTopic
+
 dependencies:
   - "chanx>=2.10.0,<3"
 

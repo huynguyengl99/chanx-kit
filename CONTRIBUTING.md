@@ -175,6 +175,24 @@ A weekly job re-resolves every dependency to its newest version and runs the sui
 against it. Kits are copied, so upstream breakage reaches users through *their* next
 install rather than through a release here.
 
+## UI kits
+
+UI kits live in `ui/`, a second copit registry (`ui/registry.yaml`, published as
+`ui/copit-registry.json`). Each binds to a contract, not a server kit: `contract.ts` is
+generated, `core.ts` is framework-free and tested with vitest, `react/` ships only with
+the `react` variant, and styles are one CSS file driven by `--chanx-*` variables.
+
+```bash
+npm ci --prefix ui
+npm --prefix ui run typecheck
+npm --prefix ui test
+uv run --extra fastapi --group dev-fastapi python scripts/contracts.py check
+```
+
+The sandbox installs every UI kit through copit, and a test fails when a copy drifts
+from `ui/`. Refresh the copies after a change:
+`cd sandbox/ui && copit update-all`.
+
 ## Commit messages
 
 [Conventional Commits](https://www.conventionalcommits.org), which is what
@@ -194,6 +212,11 @@ chore: bump the chanx floor
 - Changing a message shape changes the generated TypeScript types, so CI fails until
   you regenerate them (`npm --prefix sandbox/ui run gen`). Bump the kit's `version` and
   explain the migration in its README.
+- If the kit `defines` a contract, regenerate the UI kits' copies of it
+  (`uv run --extra fastapi --group dev-fastapi python scripts/contracts.py build`, after
+  `npm ci --prefix ui`) and run `npm --prefix ui test`. A change that breaks a consumer
+  bumps the contract version (`notification@1` to `notification@2`) in `defines` and in
+  every `implements` / `consumes`.
 - Adding an optional field is backwards compatible. Renaming or removing one is not;
   prefer adding the new field and deprecating the old.
 - New hooks need defaults that preserve current behaviour.

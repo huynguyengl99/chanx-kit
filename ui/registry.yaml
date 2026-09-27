@@ -1,0 +1,25 @@
+version: 1
+name: chanx-kit-ui
+title: ChanX Kit UI
+description: Copy-in UI for chanx-kit contracts. Framework-free cores, React components.
+source: github:huynguyengl99/chanx-kit
+homepage: https://github.com/huynguyengl99/chanx-kit
+
+ecosystem: node
+
+root: ui
+default_tier: core
+
+variants: [react]
+# copit selects these at `registry add` from the project's package.json.
+detect:
+  react: {packages: [react]}
+
+tier_rules:
+  core: [core]
+
+install:
+  target: src/chanx-kit
+  exclude:
+    - "kit.yaml"
+    - "tests/**"

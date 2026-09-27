@@ -1,0 +1,36 @@
+/* Default look for <PresenceRoster>. Theme every chanx-kit UI at once by setting the
+   --chanx-* variables at :root; the fallbacks are system colours. */
+.chanx-presence {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font: var(--chanx-font, inherit);
+  color: var(--chanx-fg, CanvasText);
+}
+.chanx-presence__member,
+.chanx-presence__empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem 0.2rem 0.2rem;
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+.chanx-presence__empty { padding-left: 0.6rem; color: var(--chanx-muted, GrayText); }
+.chanx-presence__avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--chanx-bg, Canvas);
+  background: var(--chanx-accent, #2f6feb);
+}
+.chanx-presence__member[data-self] { border-color: var(--chanx-accent, #2f6feb); }
+.chanx-presence__you { color: var(--chanx-muted, GrayText); }

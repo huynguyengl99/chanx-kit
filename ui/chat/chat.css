@@ -1,0 +1,70 @@
+/* Default look for <ChatRoom>. Theme every chanx-kit UI at once by setting the
+   --chanx-* variables at :root; the fallbacks are system colours. */
+.chanx-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  font: var(--chanx-font, inherit);
+  color: var(--chanx-fg, CanvasText);
+  background: var(--chanx-bg, Canvas);
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: var(--chanx-radius, 10px);
+}
+.chanx-chat__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.chanx-chat__head h2 { font-size: 1rem; margin: 0; }
+.chanx-chat__status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--chanx-muted, GrayText);
+}
+.chanx-chat[data-state='open'] .chanx-chat__status { color: var(--chanx-success, #1a7f4b); }
+.chanx-chat[data-state='closed'] .chanx-chat__status { color: var(--chanx-error, #c0392b); }
+.chanx-chat__log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 10rem;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+.chanx-chat__entry {
+  align-self: flex-start;
+  max-width: 85%;
+  padding: 0.4rem 0.65rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, CanvasText 6%, transparent);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.chanx-chat__entry[data-self] {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--chanx-accent, #2f6feb) 16%, transparent);
+}
+.chanx-chat__author { display: block; font-size: 0.75rem; font-weight: 600; color: var(--chanx-muted, GrayText); }
+.chanx-chat__composer { display: flex; gap: 0.5rem; }
+.chanx-chat__composer input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: 7px;
+}
+.chanx-chat__composer button {
+  font: inherit;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  border-radius: 7px;
+  color: var(--chanx-bg, Canvas);
+  background: var(--chanx-accent, #2f6feb);
+  cursor: pointer;
+}
+.chanx-chat__composer button:disabled { opacity: 0.45; cursor: not-allowed; }
+.chanx-chat :focus-visible { outline: 2px solid var(--chanx-accent, Highlight); outline-offset: 2px; }

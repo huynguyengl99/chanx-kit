@@ -10,6 +10,19 @@
     "django",
     "fastapi"
   ],
+  "detect": {
+    "django": {
+      "packages": [
+        "django",
+        "channels"
+      ]
+    },
+    "fastapi": {
+      "packages": [
+        "fastapi"
+      ]
+    }
+  },
   "install": {
     "target": "ws_kits",
     "package_marker": "__init__.py",

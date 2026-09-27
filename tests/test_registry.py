@@ -144,7 +144,7 @@ def test_registry_json_is_committed_and_current() -> None:
     registry, _ = registry_module.build()
 
     generated = registry_module.serialise(registry)
-    committed = registry_module.REGISTRY_JSON.read_text()
+    committed = registry_module.SERVER.index.read_text()
 
     assert committed == generated, (
         "copit-registry.json is stale — run: python scripts/registry.py build"
@@ -179,7 +179,7 @@ def test_tests_are_not_shipped_to_users() -> None:
 
 
 def test_registry_json_parses_as_the_documented_shape() -> None:
-    document = json.loads(registry_module.REGISTRY_JSON.read_text())
+    document = json.loads(registry_module.SERVER.index.read_text())
 
     assert document["version"] == registry_module.SCHEMA_VERSION
     assert document["ecosystem"] == "python"
@@ -307,4 +307,58 @@ def test_every_kit_exposes_a_topic() -> None:
             # a parameterless topic matches with no params, which is {} not None
             assert topic.parse(sample) is not None, (
                 f"{name}: {topic.__name__} cannot parse its own pattern"
+            )
+
+
+def test_the_ui_registry_is_valid_and_current() -> None:
+    registry, problems = registry_module.build(registry_module.UI)
+
+    assert [str(p) for p in problems] == []
+    assert registry_module.UI.index.read_text() == registry_module.serialise(
+        registry
+    ), "ui/copit-registry.json is stale — run: python scripts/registry.py build"
+
+
+def test_every_contract_reference_resolves() -> None:
+    server, _ = registry_module.build(registry_module.SERVER)
+    ui, _ = registry_module.build(registry_module.UI)
+
+    assert registry_module.contract_problems(server, ui) == []
+
+
+def test_a_stale_contract_version_names_the_current_one() -> None:
+    server, _ = registry_module.build(registry_module.SERVER)
+    ui = registry_module.Registry(
+        config={}, contracts={"feed": {"consumes": ["notification@0"]}}
+    )
+
+    problems = [str(p) for p in registry_module.contract_problems(server, ui)]
+
+    assert problems == [
+        "feed: consumes 'notification@0', which no kit defines; "
+        "the current version is notification@1"
+    ]
+
+
+def test_contracts_stay_out_of_the_published_indexes() -> None:
+    for layout in registry_module.LAYOUTS:
+        document = json.loads(layout.index.read_text())
+        for component in document["components"].values():
+            assert not {"defines", "implements", "consumes", "contract_topic"} & set(
+                component
+            )
+
+
+def test_only_react_variant_files_import_react() -> None:
+    """A UI kit installed without the react variant must still compile."""
+    registry, _ = registry_module.build(registry_module.UI)
+
+    for name, component in registry.components.items():
+        react_files = set(component["variants"].get("react", {}).get("include", []))
+        for file in set(component["files"]) - react_files:
+            if not file.endswith((".ts", ".tsx")):
+                continue
+            source = (REPO_ROOT / component["path"] / file).read_text()
+            assert "from 'react'" not in source and "/react'" not in source, (
+                f"{name}/{file} imports React outside the react variant"
             )

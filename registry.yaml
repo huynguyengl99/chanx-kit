@@ -11,6 +11,10 @@ root: kits
 default_tier: contrib
 
 variants: [django, fastapi]
+# copit selects these at `registry add` from the project's pyproject.toml.
+detect:
+  django: {packages: [django, channels]}
+  fastapi: {packages: [fastapi]}
 
 tier_rules:
   core: [core]

@@ -8,6 +8,10 @@ tier: core
 tags: [presence, roster, online]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 
+# The messages UI kits bind to; see registry-conventions.md.
+defines: presence@1
+contract_topic: PresenceTopic
+
 dependencies:
   - "chanx>=2.10.0,<3"
 

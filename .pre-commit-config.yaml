@@ -13,11 +13,11 @@ repos:
         args: [--unsafe]
       - id: check-toml
       - id: check-json
-        exclude: ^sandbox/ui/tsconfig\.json$
+        exclude: ^(sandbox/ui|ui)/tsconfig\.json$
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-added-large-files
-        exclude: ^(uv\.lock|sandbox/ui/package-lock\.json)$
+        exclude: ^(uv\.lock|sandbox/ui/package-lock\.json|ui/package-lock\.json)$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.13 # keep in sync with the lint group in pyproject.toml, or CI and pre-commit disagree on formatting
@@ -40,11 +40,11 @@ repos:
   - repo: local
     hooks:
       - id: registry-index
-        name: copit-registry.json is current
+        name: copit registry indexes are current
         entry: uv run --group registry python scripts/registry.py check
         language: system
         pass_filenames: false
-        files: ^(kits/|(registry\.yaml|copit-registry\.json)$|scripts/registry\.py$)
+        files: ^(kits/|ui/[^/]+/kit\.yaml$|(registry\.yaml|copit-registry\.json|ui/registry\.yaml|ui/copit-registry\.json)$|scripts/registry\.py$)
 
   - repo: meta
     hooks:

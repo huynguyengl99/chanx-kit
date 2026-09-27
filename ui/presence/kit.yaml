@@ -1,0 +1,18 @@
+name: presence
+title: Presence roster
+description: >-
+  Who is here, kept current from joins and leaves, for any server speaking the
+  presence contract.
+version: 0.1.0
+tier: core
+tags: [presence, roster]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+consumes: [presence@1]
+
+dependencies:
+  - "@chanx-js/client@^0.1.2"
+
+variants:
+  react:
+    include: ["react/**"]

@@ -1,0 +1,21 @@
+name: chat
+title: Chat room
+description: >-
+  A chat log with history on join and a composer, for any server speaking the chat
+  contract. Shows the room's roster through the presence UI kit.
+version: 0.1.0
+tier: core
+tags: [chat, rooms]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+consumes: [chat@1]
+
+requires:
+  - presence
+
+dependencies:
+  - "@chanx-js/client@^0.1.2"
+
+variants:
+  react:
+    include: ["react/**"]

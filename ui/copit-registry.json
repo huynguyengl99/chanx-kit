@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "name": "chanx-kit-ui",
+  "title": "ChanX Kit UI",
+  "description": "Copy-in UI for chanx-kit contracts. Framework-free cores, React components.",
+  "source": "github:huynguyengl99/chanx-kit",
+  "homepage": "https://github.com/huynguyengl99/chanx-kit",
+  "ecosystem": "node",
+  "variants": [
+    "react"
+  ],
+  "detect": {
+    "react": {
+      "packages": [
+        "react"
+      ]
+    }
+  },
+  "install": {
+    "target": "src/chanx-kit",
+    "exclude": [
+      "kit.yaml",
+      "tests/**"
+    ]
+  },
+  "components": {
+    "ag-ui": {
+      "name": "ag-ui",
+      "title": "AG-UI thread",
+      "description": "Headless state for one AG-UI conversation: messages folded from streamed events, the run in flight, run and cancel. Replay-safe when several tabs share a thread.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/ag-ui",
+      "tags": [
+        "agent",
+        "ag-ui",
+        "headless"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/index.ts",
+            "react/useAgentThread.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "contract.ts",
+        "core.ts",
+        "index.ts",
+        "react/index.ts",
+        "react/useAgentThread.ts"
+      ],
+      "optional": {}
+    },
+    "chat": {
+      "name": "chat",
+      "title": "Chat room",
+      "description": "A chat log with history on join and a composer, for any server speaking the chat contract. Shows the room's roster through the presence UI kit.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/chat",
+      "tags": [
+        "chat",
+        "rooms"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "presence"
+      ],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/ChatRoom.tsx",
+            "react/index.ts",
+            "react/useChat.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "chat.css",
+        "contract.ts",
+        "core.ts",
+        "index.ts",
+        "react/ChatRoom.tsx",
+        "react/index.ts",
+        "react/useChat.ts"
+      ],
+      "optional": {}
+    },
+    "notification": {
+      "name": "notification",
+      "title": "Notification feed",
+      "description": "A live notification feed with per-topic acknowledgement, for any server speaking the notification contract.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/notification",
+      "tags": [
+        "notification",
+        "feed"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/NotificationFeed.tsx",
+            "react/index.ts",
+            "react/useNotifications.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "contract.ts",
+        "core.ts",
+        "index.ts",
+        "notification.css",
+        "react/NotificationFeed.tsx",
+        "react/index.ts",
+        "react/useNotifications.ts"
+      ],
+      "optional": {}
+    },
+    "presence": {
+      "name": "presence",
+      "title": "Presence roster",
+      "description": "Who is here, kept current from joins and leaves, for any server speaking the presence contract.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/presence",
+      "tags": [
+        "presence",
+        "roster"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/PresenceRoster.tsx",
+            "react/index.ts",
+            "react/usePresence.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "contract.ts",
+        "core.ts",
+        "index.ts",
+        "presence.css",
+        "react/PresenceRoster.tsx",
+        "react/index.ts",
+        "react/usePresence.ts"
+      ],
+      "optional": {}
+    }
+  }
+}
