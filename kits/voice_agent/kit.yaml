@@ -1,0 +1,25 @@
+name: voice-agent
+title: Voice agent
+description: >-
+  Talk to any AG-UI agent: speech is transcribed, each utterance starts a run, the reply
+  is spoken sentence by sentence as it streams, and speaking over it interrupts, keeping
+  only what was heard. Provider-agnostic on all three sides.
+version: 0.1.0
+tier: core
+tags: [voice, agent, ag-ui, speech-to-text, text-to-speech, barge-in]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - ag-ui
+  - audio-stream-in
+  - audio-stream-out
+
+dependencies:
+  - "chanx>=2.10.2,<3"
+  - "ag-ui-protocol>=0.1.19"
+
+optional:
+  tests:
+    requires:
+      - chanx-testing
+      - fake-voice
