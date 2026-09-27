@@ -1,0 +1,34 @@
+name: elevenlabs
+title: ElevenLabs
+description: >-
+  ElevenLabs behind the voice contracts: realtime speech-to-text (Scribe) and streaming text-to-speech. Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.
+version: 0.1.0
+tier: contrib
+tags: [audio, speech-to-text, text-to-speech, elevenlabs, provider]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - audio-stream-in
+  - audio-stream-out
+
+implements: [transcriber@1, synthesizer@1]
+
+dependencies:
+  - "chanx>=2.10.2,<3"
+  - "websockets>=13"
+
+# Installed together by default; `copit add @chanx-kit/elevenlabs --only stt` keeps one.
+parts:
+  stt:
+    include: [transcriber.py, tests/test_transcriber.py, tests/fake_scribe.py]
+    requires: [audio-stream-in]
+    implements: [transcriber@1]
+  tts:
+    include: [synthesizer.py, tests/test_synthesizer.py, tests/fake_stream_input.py]
+    requires: [audio-stream-out]
+    implements: [synthesizer@1]
+
+optional:
+  tests:
+    requires:
+      - chanx-testing
