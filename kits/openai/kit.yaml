@@ -1,0 +1,37 @@
+name: openai
+title: OpenAI
+description: >-
+  OpenAI behind the voice contracts: realtime transcription and text-to-speech. Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.
+version: 0.1.0
+tier: contrib
+tags: [audio, speech-to-text, text-to-speech, openai, provider]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - audio-stream-in
+  - audio-stream-out
+
+implements: [transcriber@1, synthesizer@1]
+
+dependencies:
+  - "chanx>=2.10.2,<3"
+  - "websockets>=13"
+  - "httpx>=0.27"
+
+# Installed together by default; `copit add @chanx-kit/openai --only stt` keeps one.
+parts:
+  stt:
+    include: [transcriber.py, tests/test_transcriber.py, tests/fake_realtime.py]
+    requires: [audio-stream-in]
+    implements: [transcriber@1]
+    dependencies: ["websockets>=13"]
+  tts:
+    include: [synthesizer.py, tests/test_synthesizer.py]
+    requires: [audio-stream-out]
+    implements: [synthesizer@1]
+    dependencies: ["httpx>=0.27"]
+
+optional:
+  tests:
+    requires:
+      - chanx-testing
