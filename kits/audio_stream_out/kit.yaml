@@ -1,0 +1,26 @@
+name: audio-stream-out
+title: Audio stream out
+description: >-
+  Speak text to a session's listeners from any text-to-speech provider. Defines the
+  synthesizer contract; provider kits plug in audio. Utterances queue in order, an
+  interruption clears them, late joiners are replayed, and playback marks record what
+  was actually heard.
+version: 0.1.0
+tier: core
+tags: [audio, text-to-speech, synthesis, streaming]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - media-stream-out
+
+# The messages UI kits bind to; see registry-conventions.md.
+defines: synthesizer@1
+contract_topic: SynthesizerTopic
+
+dependencies:
+  - "chanx>=2.10.2,<3"
+
+optional:
+  tests:
+    requires:
+      - chanx-testing
