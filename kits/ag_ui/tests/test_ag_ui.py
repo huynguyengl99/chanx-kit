@@ -926,3 +926,91 @@ async def test_two_threads_run_at_the_same_time(broadcast_app: Any) -> None:
     assert by_thread[other][0] == "RUN_STARTED"
     assert by_thread[THREAD][-1] == "RUN_FINISHED"
     assert by_thread[other][-1] == "RUN_FINISHED"
+
+
+async def test_the_server_can_start_a_run_every_tab_sees(broadcast_app: Any) -> None:
+    """What a voice agent does: a transcript, not a client, starts the run."""
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+        run_id = await BroadcastAgUiTopic.start_run(
+            "thread-1", run_input(run_id="", thread_id="ignored")
+        )
+        messages = await receive_json(comm, 6)
+
+    assert types_of(messages) == [
+        "RUN_STARTED",
+        "TEXT_MESSAGE_START",
+        "TEXT_MESSAGE_CONTENT",
+        "TEXT_MESSAGE_CONTENT",
+        "TEXT_MESSAGE_END",
+        "RUN_FINISHED",
+    ]
+    assert messages[0]["payload"]["threadId"] == "thread-1"
+    assert messages[0]["payload"]["runId"] == run_id
+    assert [m["seq"] for m in messages] == [1, 2, 3, 4, 5, 6]
+
+
+async def test_a_server_run_is_replayed_to_a_tab_joining_mid_run(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    await BroadcastAgUiTopic.start_run("thread-1", run_input())
+    await asyncio.sleep(0.05)
+
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as late:
+        await late.subscribe(THREAD)
+        assert types_of(await receive_json(late, 3)) == [
+            "RUN_STARTED",
+            "TEXT_MESSAGE_START",
+            "TEXT_MESSAGE_CONTENT",
+        ]
+        gate.set()
+        assert types_of(await receive_json(late, 3))[-1] == "RUN_FINISHED"
+
+
+async def test_a_server_run_respects_one_run_per_thread(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    from ..topics import ThreadBusyError
+
+    await BroadcastAgUiTopic.start_run("thread-1", run_input(run_id="first"))
+    with pytest.raises(ThreadBusyError) as refused:
+        await BroadcastAgUiTopic.start_run("thread-1", run_input(run_id="second"))
+    assert refused.value.active_run_id == "first"
+
+    # A client asking meanwhile is refused too.
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await receive_json(comm, 3)  # the replayed start of "first"
+        await comm.send_message(
+            AgUiRunMessage(payload=run_input(run_id="third")), topic=THREAD
+        )
+        refusal = await receive_until(comm, "ag_ui_event")
+        while refusal["payload"]["type"] != "RUN_ERROR":
+            refusal = await receive_until(comm, "ag_ui_event")
+        assert "first" in refusal["payload"]["message"]
+        gate.set()
+
+
+async def test_a_server_run_can_be_cancelled(
+    broadcast_app: Any, gate: asyncio.Event
+) -> None:
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as comm:
+        await comm.subscribe(THREAD)
+        await BroadcastAgUiTopic.start_run("thread-1", run_input())
+        await receive_json(comm, 3)
+        assert BroadcastAgUiTopic.running("thread-1")
+
+        assert BroadcastAgUiTopic.cancel_run("thread-1") is True
+        ended = await receive_until(comm, "ag_ui_event")
+
+    assert ended["payload"]["type"] == "RUN_ERROR"
+    assert ended["payload"]["message"] == "Run cancelled."
+    await asyncio.sleep(0.01)
+    assert not BroadcastAgUiTopic.running("thread-1")
+    # The thread is free again.
+    await BroadcastAgUiTopic.start_run("thread-1", run_input(run_id="again"))
+
+
+async def test_start_run_needs_broadcasting() -> None:
+    with pytest.raises(RuntimeError, match="broadcast_run_events"):
+        await ScriptedAgUiTopic.start_run("thread-1", run_input())

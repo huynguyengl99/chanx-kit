@@ -5,7 +5,7 @@ from .store import (
     InMemoryRunEventStore,
     RunEventStore,
 )
-from .topics import AgUiBaseTopic, AgUiRunTopic, AgUiTopic
+from .topics import AgUiBaseTopic, AgUiRunTopic, AgUiTopic, ThreadBusyError
 
 __all__ = [
     "ActiveRunStore",
@@ -19,4 +19,5 @@ __all__ = [
     "InMemoryActiveRunStore",
     "InMemoryRunEventStore",
     "RunEventStore",
+    "ThreadBusyError",
 ]

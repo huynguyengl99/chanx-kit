@@ -30,6 +30,15 @@ from .store import (
 RUN_TERMINAL_EVENTS = frozenset({EventType.RUN_FINISHED, EventType.RUN_ERROR})
 
 
+class ThreadBusyError(Exception):
+    """The thread already has a run in flight; it runs one at a time."""
+
+    def __init__(self, thread_id: str, active_run_id: str) -> None:
+        super().__init__(f"Thread {thread_id} is already running {active_run_id}.")
+        self.thread_id = thread_id
+        self.active_run_id = active_run_id
+
+
 class AgUiBaseTopic(Topic[AgUiEventMessage]):
     """Serialisation shared by every AG-UI topic."""
 
@@ -71,6 +80,8 @@ class AgUiTopic(AgUiBaseTopic):
     # this is a plain registry rather than a protocol: a cancel stops a run only on
     # the process that is running it.
     _run_tasks: ClassVar[dict[tuple[str, str], "asyncio.Task[None]"]] = {}
+    # Referenced so server-started runs are not garbage collected.
+    _drivers: ClassVar[set["asyncio.Task[None]"]] = set()
 
     def __init__(self, consumer: Any, topic: str) -> None:
         super().__init__(consumer, topic)
@@ -156,9 +167,12 @@ class AgUiTopic(AgUiBaseTopic):
         if active_run_id is not None:
             await self.on_run_refused(run_input, active_run_id)
             return
+        await self._drive(run_input)
 
+    async def _drive(self, run_input: RunAgentInput) -> None:
+        """Run a claimed run to its end and release the thread, however it ends."""
         # The stream runs as its own task so a cancel has something to stop. Cancelling
-        # the handler instead would leave nothing running to report the outcome.
+        # the driver instead would leave nothing running to report the outcome.
         key = (self.thread_id, run_input.run_id)
         run_task: asyncio.Task[None] = asyncio.ensure_future(
             self._stream_run(run_input)
@@ -169,7 +183,7 @@ class AgUiTopic(AgUiBaseTopic):
             await run_task
         except asyncio.CancelledError:
             if not run_task.cancelled():
-                raise  # this handler is being torn down, not the run
+                raise  # the driver is being torn down, not the run
             await self.on_run_cancelled(run_input)
         except Exception as error:  # noqa: BLE001 - surfaced to the client as RUN_ERROR
             await self.on_run_error(run_input, error)
@@ -179,6 +193,56 @@ class AgUiTopic(AgUiBaseTopic):
             self._run_tasks.pop(key, None)
             self._own_runs.discard(key)
             await self.active_run_store.end(self.thread_id, run_input.run_id)
+
+    @classmethod
+    def detached(cls, thread_id: str) -> "AgUiTopic":
+        """This topic without a connection (no scope or socket), for server runs."""
+        instance = cls.__new__(cls)
+        instance.params = {"thread_id": thread_id}
+        instance.topic = f"agui:thread:{thread_id}"
+        instance.scope = {}
+        instance._own_runs = set()
+        return instance
+
+    @classmethod
+    async def start_run(cls, thread_id: str, run_input: RunAgentInput) -> str:
+        """Run the agent on ``thread_id`` from the server; raises ``ThreadBusyError``."""
+        if not cls.broadcast_run_events:
+            raise RuntimeError(
+                f"{cls.__name__}.start_run needs broadcast_run_events = True: a run "
+                "no connection asked for can only reach the thread by broadcast."
+            )
+        run_input.thread_id = thread_id
+        run_input.run_id = run_input.run_id or uuid.uuid4().hex
+        active_run_id = await cls.active_run_store.begin(thread_id, run_input.run_id)
+        if active_run_id is not None:
+            raise ThreadBusyError(thread_id, active_run_id)
+        instance = cls.detached(thread_id)
+        cls._drivers.add(asyncio.ensure_future(instance._drive(run_input)))
+        cls._drivers = {task for task in cls._drivers if not task.done()}
+        return run_input.run_id
+
+    @classmethod
+    def cancel_run(cls, thread_id: str, run_id: str | None = None) -> bool:
+        """Stop this process's run on ``thread_id`` (any, when ``run_id`` is None)."""
+        stopped = False
+        for (thread, run), task in list(cls._run_tasks.items()):
+            if (
+                thread == thread_id
+                and (run_id is None or run == run_id)
+                and not task.done()
+            ):
+                task.cancel()
+                stopped = True
+        return stopped
+
+    @classmethod
+    def running(cls, thread_id: str) -> bool:
+        """Whether a run on ``thread_id`` is in flight in this process."""
+        return any(
+            thread == thread_id and not task.done()
+            for (thread, _), task in cls._run_tasks.items()
+        )
 
     async def on_unsubscribe(self) -> None:
         """Take this connection's runs with it when it leaves.

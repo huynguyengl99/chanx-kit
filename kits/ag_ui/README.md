@@ -222,6 +222,20 @@ With `broadcast_run_events`, an event that starts a run or lands in one in fligh
 recorded like the topic's own, so a tab joining later is replayed it with its `seq`.
 An event outside any run is sent live only, since replaying it would show a stale event.
 
+**Start a run from the server.** With `broadcast_run_events`, `start_run` runs the
+agent on a thread without any connection asking: a transcript (see the voice-agent
+kit), a worker, a schedule. It goes through the same one-run-per-thread guard,
+replay and cancellation as a client's run:
+
+```python
+run_id = await MyAgUiTopic.start_run(thread_id, run_input)   # ThreadBusyError if busy
+MyAgUiTopic.cancel_run(thread_id)                            # ends it with RUN_ERROR
+```
+
+`run_events` runs on a *detached* instance of your topic (`MyAgUiTopic.detached(thread_id)`):
+`thread_id` and the class's stores work as usual, but there is no scope or socket, so a
+run that needs the user must take it from `run_input` (state or forwarded props).
+
 **Emit into one run.** `AgUiRunTopic` addresses a single execution,
 `agui:run:<run_id>`, for when the caller must target *that* run, for example a queued
 job keyed by run id, or a UI showing per-run progress while two runs share a thread.
