@@ -14,13 +14,63 @@ from pathlib import Path
 from typing import Any
 
 import mkdocs_gen_files
+import yaml
 from chanx.messages.base import BaseMessage
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 REGISTRY = json.loads((REPO_ROOT / "copit-registry.json").read_text())
 COMPONENTS: dict[str, Any] = REGISTRY["components"]
+UI_COMPONENTS: dict[str, Any] = json.loads(
+    (REPO_ROOT / "ui" / "copit-registry.json").read_text()
+)["components"]
 REPO_URL = "https://github.com/huynguyengl99/chanx-kit"
+SHADCN_URL = "https://huynguyengl99.github.io/chanx-kit/r"
+
+
+def manifest(component: dict[str, Any]) -> dict[str, Any]:
+    return yaml.safe_load((REPO_ROOT / component["path"] / "kit.yaml").read_text())
+
+
+# Contracts live in kit.yaml, not the published index.
+SERVERS_OF: dict[str, list[str]] = {}
+UIS_OF: dict[str, list[str]] = {}
+for _name, _component in COMPONENTS.items():
+    _meta = manifest(_component)
+    for _contract in [_meta.get("defines"), *(_meta.get("implements") or [])]:
+        if _contract:
+            SERVERS_OF.setdefault(_contract, []).append(_name)
+for _name, _component in UI_COMPONENTS.items():
+    for _contract in manifest(_component).get("consumes") or []:
+        UIS_OF.setdefault(_contract, []).append(_name)
+
+
+def contracts_of(component: dict[str, Any]) -> list[str]:
+    meta = manifest(component)
+    found = [meta.get("defines"), *(meta.get("implements") or [])]
+    return [contract for contract in found if contract] + list(
+        meta.get("consumes") or []
+    )
+
+
+def link_list(names: list[str], prefix: str) -> str:
+    return ", ".join(f"[`{name}`]({prefix}{name}.md)" for name in names)
+
+
+def contract_facts(component: dict[str, Any], *, ui: bool) -> list[str]:
+    """Each contract, and the kits on the other side of it."""
+    rows = []
+    for contract in contracts_of(component):
+        rows.append(f"| **Contract** | `{contract}` |")
+        other, label, prefix = (
+            (SERVERS_OF, "Works with", "../kits/")
+            if ui
+            else (UIS_OF, "UI kits", "../ui/")
+        )
+        if other.get(contract):
+            rows.append(f"| **{label}** | {link_list(other[contract], prefix)} |")
+    return rows
+
 
 nav_lines: list[str] = []
 
@@ -135,6 +185,7 @@ def kit_page(name: str, component: dict[str, Any]) -> str:
     if requires:
         links = ", ".join(f"[`{r}`]({r}.md)" for r in requires)
         facts.append(f"| **Requires kits** | {links} |")
+    facts += contract_facts(component, ui=False)
     if dependencies:
         facts.append(
             "| **Python packages** | "
@@ -199,6 +250,81 @@ for name in sorted(COMPONENTS):
         f"kits/{name}.md", f"{COMPONENTS[name]['path']}/README.md"
     )
     nav_lines.append(f"    * [{COMPONENTS[name]['title']}](kits/{name}.md)")
+
+
+# --- UI kit pages ---------------------------------------------------------------
+def ui_page(name: str, component: dict[str, Any]) -> str:
+    readme = (REPO_ROOT / component["path"] / "README.md").read_text()
+    body = re.sub(r"\A#\s+.*\n+", "", readme, count=1)
+
+    facts = [
+        "| | |",
+        "|---|---|",
+        f"| **Install** | `copit add @chanx-kit-ui/{name}` |",
+        f"| **Or with shadcn** | `npx shadcn add {SHADCN_URL}/{name}.json` |",
+    ]
+    facts += contract_facts(component, ui=True)
+    if component.get("requires"):
+        facts.append(
+            f"| **Requires UI kits** | {link_list(component['requires'], '')} |"
+        )
+    variants = ", ".join(f"`{variant}`" for variant in component.get("variants", {}))
+    if variants:
+        facts.append(f"| **Frameworks** | {variants} (the core is framework-free) |")
+    facts.append(
+        "| **npm packages** | "
+        + ", ".join(f"`{d}`" for d in component["dependencies"])
+        + " |"
+    )
+    facts.append(
+        f"| **Source** | [{component['path']}]({REPO_URL}/tree/main/{component['path']}) |"
+    )
+
+    header = [
+        f"# {component['title']}",
+        "",
+        f'!!! info "UI · v{component["version"]}"',
+        f"    {component['description']}",
+        "",
+    ]
+    return "\n".join(["\n".join(header), "\n".join(facts), "", rewrite_links(body)])
+
+
+ui_index = [
+    "# UI kits",
+    "",
+    "Copy-in UI that binds to a **contract**, the messages on a topic, rather than to"
+    " one server kit, so it works with every server speaking that contract. Each has a"
+    " framework-free core and React components; styling is one CSS file driven by"
+    " `--chanx-*` variables. Set the registry up once, choosing your framework:",
+    "",
+    "```bash",
+    "copit registry add chanx-kit-ui github:huynguyengl99/chanx-kit@<tag> \\",
+    "  --index ui/copit-registry.json --to web/src/chanx-kit --variant react",
+    "copit add @chanx-kit/notification @chanx-kit-ui/notification",
+    "```",
+    "",
+    "| UI kit | Contract | Description |",
+    "|---|---|---|",
+]
+for name in sorted(UI_COMPONENTS):
+    component = UI_COMPONENTS[name]
+    contract = ", ".join(f"`{c}`" for c in contracts_of(component))
+    ui_index.append(
+        f"| [`{name}`]({name}.md) | {contract} | {component['description']} |"
+    )
+
+with mkdocs_gen_files.open("ui/index.md", "w") as handle:
+    handle.write("\n".join(ui_index) + "\n")
+
+nav_lines.append("* [UI kits](ui/index.md)")
+for name in sorted(UI_COMPONENTS):
+    with mkdocs_gen_files.open(f"ui/{name}.md", "w") as handle:
+        handle.write(ui_page(name, UI_COMPONENTS[name]))
+    mkdocs_gen_files.set_edit_path(
+        f"ui/{name}.md", f"{UI_COMPONENTS[name]['path']}/README.md"
+    )
+    nav_lines.append(f"    * [{UI_COMPONENTS[name]['title']}](ui/{name}.md)")
 
 # --- contributing page ----------------------------------------------------------
 # Rendered from the repository's own CONTRIBUTING.md so the two cannot disagree. Its
