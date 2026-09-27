@@ -218,6 +218,10 @@ subscribed to the thread, so nothing has to be arranged in advance.
 await MyAgUiTopic.emit_to_thread(thread_id, ToolCallStartEvent(...))
 ```
 
+With `broadcast_run_events`, an event that starts a run or lands in one in flight is
+recorded like the topic's own, so a tab joining later is replayed it with its `seq`.
+An event outside any run is sent live only, since replaying it would show a stale event.
+
 **Emit into one run.** `AgUiRunTopic` addresses a single execution,
 `agui:run:<run_id>`, for when the caller must target *that* run, for example a queued
 job keyed by run id, or a UI showing per-run progress while two runs share a thread.

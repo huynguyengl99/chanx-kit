@@ -276,7 +276,15 @@ class AgUiTopic(AgUiBaseTopic):
     async def emit_to_thread(cls, thread_id: str, event: Event) -> None:
         """Emit into a conversation from outside the connection, reaching every client
         already subscribed to it. Prefer this over :class:`AgUiRunTopic` unless the
-        caller must target one run: no client has to know a run id in advance."""
+        caller must target one run: no client has to know a run id in advance.
+
+        Events in a run are recorded for replay; one outside any run is sent live only."""
+        if cls.broadcast_run_events and (
+            event.type == EventType.RUN_STARTED
+            or await cls.run_event_store.replay(thread_id)
+        ):
+            await cls.broadcast_run_event(thread_id, event)
+            return
         await cls.broadcast(f"agui:thread:{thread_id}", AgUiEventMessage(payload=event))
 
 

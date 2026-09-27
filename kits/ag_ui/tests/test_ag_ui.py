@@ -10,6 +10,7 @@ from ag_ui.core import (
     Event,
     EventType,
     RunAgentInput,
+    RunStartedEvent,
     TextMessageContentEvent,
     TextMessageEndEvent,
     TextMessageStartEvent,
@@ -507,6 +508,36 @@ async def test_another_process_can_emit_into_a_run(app: Any) -> None:
 
     assert event["payload"]["delta"] == "from a worker"
     assert event["payload"]["messageId"] == "msg-2"
+
+
+async def test_a_run_emitted_from_a_worker_is_replayed_to_a_late_joiner(
+    broadcast_app: Any,
+) -> None:
+    await BroadcastAgUiTopic.emit_to_thread(
+        "thread-1",
+        RunStartedEvent(type=EventType.RUN_STARTED, thread_id="thread-1", run_id="w"),
+    )
+    await BroadcastAgUiTopic.emit_to_thread(
+        "thread-1",
+        TextMessageStartEvent(type=EventType.TEXT_MESSAGE_START, message_id="m"),
+    )
+
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as late:
+        await late.subscribe(THREAD)
+        replayed = await receive_json(late, 2)
+
+    assert types_of(replayed) == ["RUN_STARTED", "TEXT_MESSAGE_START"]
+    assert [m["seq"] for m in replayed] == [1, 2]
+
+
+async def test_an_event_outside_a_run_is_not_replayed(broadcast_app: Any) -> None:
+    await BroadcastAgUiTopic.emit_to_thread(
+        "thread-1", CustomEvent(type=EventType.CUSTOM, name="ping", value=1)
+    )
+
+    async with communicator(broadcast_app, PATH, BroadcastConsumer) as late:
+        await late.subscribe(THREAD)
+        await assert_silent(late)
 
 
 async def test_initial_state_lands_before_the_replayed_run(
