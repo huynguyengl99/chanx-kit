@@ -19,3 +19,6 @@ node_modules/
 sandbox/ui/dist/
 site/
 sandbox/ui/asyncapi.json
+
+# Local secrets: provider keys for scripts/live_check.py and the sandbox.
+.env
