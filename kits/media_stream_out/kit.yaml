@@ -1,0 +1,16 @@
+name: media-stream-out
+title: Media stream out
+description: >-
+  The plumbing for media the server streams out: producers run one at a time per
+  session and can be cut off as a whole, and what was sent is kept so a connection
+  joining part-way is replayed. The base the speech output kits build on.
+version: 0.1.0
+tier: core
+tags: [media, streaming, audio, replay]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - media-stream-in  # its Base64Data carries the bytes
+
+dependencies:
+  - "chanx>=2.10.2,<3"
