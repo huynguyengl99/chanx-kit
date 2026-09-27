@@ -1,8 +1,11 @@
 import { useState } from 'react';
 
 import { AgentPanel } from './panels/AgentPanel';
+import { AssistantPanel } from './panels/AssistantPanel';
 import { NotificationPanel } from './panels/NotificationPanel';
 import { RoomPanel } from './panels/RoomPanel';
+import { SpeechPanel } from './panels/SpeechPanel';
+import { VoicePanel } from './panels/VoicePanel';
 
 export function App() {
   const [who, setWho] = useState('ana');
@@ -26,6 +29,9 @@ export function App() {
         <RoomPanel who={who} />
         <NotificationPanel who={who} />
         <AgentPanel />
+        <VoicePanel />
+        <SpeechPanel />
+        <AssistantPanel />
       </div>
     </main>
   );

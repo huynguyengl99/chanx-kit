@@ -71,11 +71,63 @@ export interface AssistantMessage {
   toolCalls?: Array<ToolCall> | null;
 }
 
+/** ``index`` counts from 0 for each ``audio_start``, so a gap can be detected. */
+export interface AudioChunk {
+  index: number;
+  data: string;
+}
+
+/** A piece of the stream. */
+export interface AudioChunkMessage {
+  action: "audio_chunk";
+  payload: AudioChunk;
+}
+
+/** The format the server wants, and how much audio to put in each chunk. */
+export interface AudioConfig {
+  encoding: "pcm16";
+  sample_rate?: number;
+  channels?: number;
+  chunk_ms?: number;
+}
+
+/** Sent on subscribe: capture to this format. */
+export interface AudioConfigMessage {
+  action: "audio_config";
+  payload: AudioConfig;
+}
+
+/** Client asks for the capture format again, without resubscribing. */
+export interface AudioConfigRequestMessage {
+  action: "audio_config_request";
+  payload?: null;
+}
+
+/** The stream is over: flush what the provider holds, then close it. */
+export interface AudioEndMessage {
+  action: "audio_end";
+  payload?: null;
+}
+
 /** An audio input content fragment. */
 export interface AudioInputContent {
   type: "audio";
   source: InputContentDataSource | InputContentUrlSource;
   metadata?: unknown | null;
+}
+
+/** The format actually captured, which must match ``audio_config``. */
+export interface AudioStart {
+  encoding: "pcm16";
+  sample_rate?: number;
+  channels?: number;
+  language?: string | null;
+}
+
+/** Client begins a stream of audio. */
+export interface AudioStartMessage {
+  action: "audio_start";
+  payload: AudioStart;
 }
 
 /** A deprecated binary payload reference in a multimodal user message. */
@@ -259,6 +311,18 @@ export interface NotificationPayload {
 export interface PingMessage {
   action: "ping";
   payload?: null;
+}
+
+/** How much of an utterance was actually heard, in milliseconds. */
+export interface PlaybackMark {
+  utterance_id: string;
+  played_ms: number;
+}
+
+/** Client reports playback progress, so the server knows what was heard. */
+export interface PlaybackMarkMessage {
+  action: "playback_mark";
+  payload: PlaybackMark;
 }
 
 /** Simple pong message response to ping requests. */
@@ -472,6 +536,83 @@ export interface RunStartedEvent {
   input?: RunAgentInput | null;
 }
 
+export interface Speak {
+  text: string;
+  voice?: string | null;
+  utterance_id?: string | null;
+}
+
+/** Client asks to stop: the utterance playing and everything queued. */
+export interface SpeakClearMessage {
+  action: "speak_clear";
+  payload?: null;
+}
+
+/** Client asks for text to be spoken. Queued behind what is already speaking. */
+export interface SpeakMessage {
+  action: "speak";
+  payload: Speak;
+}
+
+/** ``index`` counts from 0 per utterance, so a replayed chunk can be recognised. */
+export interface SpeechAudioChunk {
+  utterance_id: string;
+  index: number;
+  data: string;
+}
+
+/** A piece of the utterance's audio. */
+export interface SpeechAudioChunkMessage {
+  action: "audio_chunk";
+  payload: SpeechAudioChunk;
+}
+
+export interface SpeechAudioEnd {
+  utterance_id: string;
+  duration_ms: number;
+}
+
+/** The utterance's audio is complete. */
+export interface SpeechAudioEndMessage {
+  action: "audio_end";
+  payload: SpeechAudioEnd;
+}
+
+export interface SpeechAudioStart {
+  encoding: "pcm16";
+  sample_rate?: number;
+  channels?: number;
+  utterance_id: string;
+  text: string;
+}
+
+/** An utterance begins, in this format. */
+export interface SpeechAudioStartMessage {
+  action: "audio_start";
+  payload: SpeechAudioStart;
+}
+
+/** The utterance that was playing, if any. */
+export interface SpeechClear {
+  utterance_id?: string | null;
+}
+
+/** Stop playing now and drop anything buffered: an interruption. */
+export interface SpeechClearMessage {
+  action: "clear";
+  payload: SpeechClear;
+}
+
+export interface SpeechStarted {
+  at_ms: number;
+}
+
+/** The provider heard speech begin, for barge-in and "listening" indicators. */
+export interface SpeechStartedMessage {
+  action: "speech_started";
+  payload: SpeechStarted;
+}
+
 /** Event containing a delta of the state. */
 export interface StateDeltaEvent {
   metadata?: Record<string, unknown> | null;
@@ -557,6 +698,20 @@ export interface SubagentStartedEvent {
   parentSubagentRunId?: string | null;
   parentToolCallId?: string | null;
   parentMessageId?: string | null;
+}
+
+export interface SynthesizerError {
+  code: SynthesizerErrorCode;
+  message: string;
+  utterance_id?: string | null;
+}
+
+export type SynthesizerErrorCode = "provider_unavailable" | "bad_request" | "provider_failed";
+
+/** An utterance could not be spoken. */
+export interface SynthesizerErrorMessage {
+  action: "synthesizer_error";
+  payload: SynthesizerError;
 }
 
 /** A system message. */
@@ -762,6 +917,47 @@ export interface ToolMessage {
   subagentRunId?: string | null;
 }
 
+export interface TranscriberError {
+  code: TranscriberErrorCode;
+  message: string;
+}
+
+export type TranscriberErrorCode = "provider_unavailable" | "limit_reached" | "bad_format" | "audio_gap" | "not_started";
+
+/** Something went wrong. Every code except ``audio_gap`` ends the stream. */
+export interface TranscriberErrorMessage {
+  action: "transcriber_error";
+  payload: TranscriberError;
+}
+
+/** Times are milliseconds from the ``audio_start`` of this stream. */
+export interface Transcript {
+  utterance_id: string;
+  text: string;
+  start_ms: number;
+  end_ms: number;
+}
+
+export interface TranscriptFinal {
+  utterance_id: string;
+  text: string;
+  start_ms: number;
+  end_ms: number;
+  confidence?: number | null;
+}
+
+/** A segment that will not change. An utterance is its finals in order. */
+export interface TranscriptFinalMessage {
+  action: "transcript_final";
+  payload: TranscriptFinal;
+}
+
+/** The segment being spoken, so far. Replaces the previous partial of the utterance. */
+export interface TranscriptPartialMessage {
+  action: "transcript_partial";
+  payload: Transcript;
+}
+
 /** A user message supporting text or multimodal content. */
 export interface UserMessage {
   metadata?: Record<string, unknown> | null;
@@ -771,6 +967,16 @@ export interface UserMessage {
   name?: string | null;
   encryptedValue?: string | null;
   subagentRunId?: string | null;
+}
+
+export interface UtteranceEnd {
+  utterance_id: string;
+}
+
+/** The speaker paused: the utterance is complete. */
+export interface UtteranceEndMessage {
+  action: "utterance_end";
+  payload: UtteranceEnd;
 }
 
 /** A video input content fragment. */

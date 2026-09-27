@@ -7,6 +7,11 @@ import type {
   AgUiCancelMessage,
   AgUiEventMessage,
   AgUiRunMessage,
+  AudioChunkMessage,
+  AudioConfigMessage,
+  AudioConfigRequestMessage,
+  AudioEndMessage,
+  AudioStartMessage,
   ChatBacklogMessage,
   ChatBacklogRequestMessage,
   ChatMessage,
@@ -15,11 +20,24 @@ import type {
   NotificationAckedMessage,
   NotificationMessage,
   PingMessage,
+  PlaybackMarkMessage,
   PongMessage,
   PresenceJoinMessage,
   PresenceLeaveMessage,
   PresenceRequestMessage,
   PresenceStateMessage,
+  SpeakClearMessage,
+  SpeakMessage,
+  SpeechAudioChunkMessage,
+  SpeechAudioEndMessage,
+  SpeechAudioStartMessage,
+  SpeechClearMessage,
+  SpeechStartedMessage,
+  SynthesizerErrorMessage,
+  TranscriberErrorMessage,
+  TranscriptFinalMessage,
+  TranscriptPartialMessage,
+  UtteranceEndMessage,
 } from './schemas';
 
 export type AgentToServer = PingMessage;
@@ -28,6 +46,15 @@ export type AgentDemoAgUiTopicToServer = AgUiCancelMessage | AgUiRunMessage;
 export type AgentDemoAgUiTopicToClient = AgUiEventMessage;
 export type AgentAgUiRunTopicToServer = never;
 export type AgentAgUiRunTopicToClient = AgUiEventMessage;
+
+export type AssistantToServer = PingMessage;
+export type AssistantToClient = PongMessage;
+export type AssistantAssistantEarsTopicToServer = AudioChunkMessage | AudioConfigRequestMessage | AudioEndMessage | AudioStartMessage;
+export type AssistantAssistantEarsTopicToClient = AudioConfigMessage | SpeechStartedMessage | TranscriberErrorMessage | TranscriptFinalMessage | TranscriptPartialMessage | UtteranceEndMessage;
+export type AssistantAssistantTopicToServer = AgUiCancelMessage | AgUiRunMessage;
+export type AssistantAssistantTopicToClient = AgUiEventMessage;
+export type AssistantAssistantVoiceTopicToServer = PlaybackMarkMessage | SpeakClearMessage | SpeakMessage;
+export type AssistantAssistantVoiceTopicToClient = SpeechAudioChunkMessage | SpeechAudioEndMessage | SpeechAudioStartMessage | SpeechClearMessage | SynthesizerErrorMessage;
 
 export type NotificationsToServer = PingMessage;
 export type NotificationsToClient = PongMessage;
@@ -45,6 +72,15 @@ export type RoomDemoChatTopicToClient = ChatBacklogMessage | ChatMessage;
 export type RoomDemoPresenceTopicToServer = PresenceRequestMessage;
 export type RoomDemoPresenceTopicToClient = PresenceJoinMessage | PresenceLeaveMessage | PresenceStateMessage;
 
+export type VoiceToServer = PingMessage;
+export type VoiceToClient = PongMessage;
+export type VoiceDemoTranscriberTopicToServer = AudioChunkMessage | AudioConfigRequestMessage | AudioEndMessage | AudioStartMessage;
+export type VoiceDemoTranscriberTopicToClient = AudioConfigMessage | SpeechStartedMessage | TranscriberErrorMessage | TranscriptFinalMessage | TranscriptPartialMessage | UtteranceEndMessage;
+export type VoiceTranscriptTopicToServer = never;
+export type VoiceTranscriptTopicToClient = SpeechStartedMessage | TranscriptFinalMessage | TranscriptPartialMessage | UtteranceEndMessage;
+export type VoiceDemoSynthesizerTopicToServer = PlaybackMarkMessage | SpeakClearMessage | SpeakMessage;
+export type VoiceDemoSynthesizerTopicToClient = SpeechAudioChunkMessage | SpeechAudioEndMessage | SpeechAudioStartMessage | SpeechClearMessage | SynthesizerErrorMessage;
+
 /** AG-UI protocol over a websocket. */
 export const agent = defineChannel<AgentToServer, AgentToClient>()({
   name: "agent",
@@ -60,6 +96,30 @@ export const agent = defineChannel<AgentToServer, AgentToClient>()({
     agUiRunTopic: defineTopic<AgentAgUiRunTopicToServer, AgentAgUiRunTopicToClient>()({
       name: "ag_ui_run_topic",
       pattern: "agui:run:{run_id}",
+    }),
+  },
+});
+
+/** A voice agent: speak, hear the reply, interrupt by speaking. */
+export const assistant = defineChannel<AssistantToServer, AssistantToClient>()({
+  name: "assistant",
+  address: "/ws/assistant",
+  heartbeat: true,
+  topics: {
+    /** What the user says to the assistant: ``transcribe:<session>``. */
+    assistantEarsTopic: defineTopic<AssistantAssistantEarsTopicToServer, AssistantAssistantEarsTopicToClient>()({
+      name: "assistant_ears_topic",
+      pattern: "transcribe:{session}",
+    }),
+    /** The assistant: ``agui:thread:<session>``. Replies are spoken as they stream. */
+    assistantTopic: defineTopic<AssistantAssistantTopicToServer, AssistantAssistantTopicToClient>()({
+      name: "assistant_topic",
+      pattern: "agui:thread:{thread_id}",
+    }),
+    /** The assistant's voice: ``speak:<session>``. */
+    assistantVoiceTopic: defineTopic<AssistantAssistantVoiceTopicToServer, AssistantAssistantVoiceTopicToClient>()({
+      name: "assistant_voice_topic",
+      pattern: "speak:{session}",
     }),
   },
 });
@@ -107,8 +167,34 @@ export const room = defineChannel<RoomToServer, RoomToClient>()({
   },
 });
 
+/** Speech in and out: transcripts from audio, audio from text. */
+export const voice = defineChannel<VoiceToServer, VoiceToClient>()({
+  name: "voice",
+  address: "/ws/voice",
+  heartbeat: true,
+  topics: {
+    /** Microphone audio in, transcripts out: ``transcribe:<session>``. */
+    demoTranscriberTopic: defineTopic<VoiceDemoTranscriberTopicToServer, VoiceDemoTranscriberTopicToClient>()({
+      name: "demo_transcriber_topic",
+      pattern: "transcribe:{session}",
+    }),
+    /** Watch a session's transcripts read-only: ``transcript:<session>``. */
+    transcriptTopic: defineTopic<VoiceTranscriptTopicToServer, VoiceTranscriptTopicToClient>()({
+      name: "transcript_topic",
+      pattern: "transcript:{session}",
+    }),
+    /** Text in, speech out to every listener: ``speak:<session>``. */
+    demoSynthesizerTopic: defineTopic<VoiceDemoSynthesizerTopicToServer, VoiceDemoSynthesizerTopicToClient>()({
+      name: "demo_synthesizer_topic",
+      pattern: "speak:{session}",
+    }),
+  },
+});
+
 export const channels = {
   agent,
+  assistant,
   notifications,
   room,
+  voice,
 } as const;

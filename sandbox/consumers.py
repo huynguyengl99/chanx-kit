@@ -5,8 +5,9 @@ UI and the TypeScript generator both read from.
 """
 
 import asyncio
+import os
 from collections.abc import AsyncIterator
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import uuid4
 
 from chanx.core.decorators import channel, ws_handler
@@ -16,6 +17,12 @@ from chanx.messages.incoming import PingMessage
 from chanx.messages.outgoing import PongMessage
 from chanx.utils.scope import query_params
 from kits.ag_ui import AgUiEventMessage, AgUiRunTopic, AgUiTopic
+from kits.audio_stream_in import (
+    TranscriptFinalMessage,
+    TranscriptTopic,
+)
+from kits.fake_voice.synthesizer import FakeSynthesizerTopic
+from kits.fake_voice.transcriber import FakeTranscriberTopic
 from kits.notification import (
     BroadcastNotificationTopic,
     NotificationMessage,
@@ -29,6 +36,7 @@ from kits.presence import (
     PresenceTopic,
 )
 from kits.room_chat import ChatAuthor, ChatMessage, RoomChatTopic
+from kits.voice_agent import VoiceAgentTopic, VoiceTranscriberTopic
 
 from ag_ui.core import (
     Event,
@@ -139,6 +147,114 @@ class AgentConsumer(AsyncJsonWebsocketConsumer[AgUiEventMessage]):
 
     channel_layer_alias = LAYER
     topics: ClassVar[list[type[Topic[Any]]]] = [DemoAgUiTopic, AgUiRunTopic]
+
+    @ws_handler(summary="Ping", description="Connection health check.")
+    async def handle_ping(self, _message: PingMessage) -> PongMessage:
+        return PongMessage()
+
+
+# A real provider when its key is set, the fake otherwise; the client cannot tell.
+if TYPE_CHECKING:
+    TranscriberBase = FakeTranscriberTopic
+    SynthesizerBase = FakeSynthesizerTopic
+else:
+    from kits.deepgram.transcriber import DeepgramTranscriberTopic
+    from kits.elevenlabs.synthesizer import ElevenLabsSynthesizerTopic
+
+    TranscriberBase = (
+        DeepgramTranscriberTopic
+        if os.environ.get("DEEPGRAM_API_KEY")
+        else FakeTranscriberTopic
+    )
+    SynthesizerBase = (
+        ElevenLabsSynthesizerTopic
+        if os.environ.get("ELEVENLABS_API_KEY")
+        else FakeSynthesizerTopic
+    )
+
+
+class DemoTranscriberTopic(TranscriberBase):
+    """Microphone audio in, transcripts out: ``transcribe:<session>``."""
+
+    channel_layer_alias = LAYER
+
+
+class DemoSynthesizerTopic(SynthesizerBase):
+    """Text in, speech out to every listener: ``speak:<session>``."""
+
+    channel_layer_alias = LAYER
+
+
+@channel(
+    name="voice",
+    description="Speech in and out: transcripts from audio, audio from text.",
+    tags=["audio", "transcription", "speech"],
+)
+class VoiceConsumer(AsyncJsonWebsocketConsumer[TranscriptFinalMessage]):
+    """A session's audio on one topic, its transcript for watchers on another."""
+
+    channel_layer_alias = LAYER
+    topics: ClassVar[list[type[Topic[Any]]]] = [
+        DemoTranscriberTopic,
+        TranscriptTopic,
+        DemoSynthesizerTopic,
+    ]
+
+    @ws_handler(summary="Ping", description="Connection health check.")
+    async def handle_ping(self, _message: PingMessage) -> PongMessage:
+        return PongMessage()
+
+
+class AssistantVoiceTopic(SynthesizerBase):
+    """The assistant's voice: ``speak:<session>``."""
+
+    channel_layer_alias = LAYER
+
+
+class AssistantTopic(VoiceAgentTopic):
+    """The assistant: ``agui:thread:<session>``. Replies are spoken as they stream."""
+
+    channel_layer_alias = LAYER
+    synthesizer = AssistantVoiceTopic
+
+    async def run_agent(self, run_input: RunAgentInput) -> AsyncIterator[Event]:
+        message_id = uuid4().hex
+        yield TextMessageStartEvent(
+            type=EventType.TEXT_MESSAGE_START, message_id=message_id
+        )
+        for word in _canned_reply(run_input).split():
+            yield TextMessageContentEvent(
+                type=EventType.TEXT_MESSAGE_CONTENT,
+                message_id=message_id,
+                delta=word + " ",
+            )
+            await asyncio.sleep(0.04)
+        yield TextMessageEndEvent(
+            type=EventType.TEXT_MESSAGE_END, message_id=message_id
+        )
+
+
+class AssistantEarsTopic(VoiceTranscriberTopic, TranscriberBase):
+    """What the user says to the assistant: ``transcribe:<session>``."""
+
+    channel_layer_alias = LAYER
+    agent_topic = AssistantTopic
+
+
+@channel(
+    name="assistant",
+    description="A voice agent: speak, hear the reply, interrupt by speaking.",
+    tags=["audio", "agent", "ag-ui"],
+)
+class AssistantConsumer(AsyncJsonWebsocketConsumer[AgUiEventMessage]):
+    """Three kits on one session: transcriber, AG-UI agent, synthesizer."""
+
+    channel_layer_alias = LAYER
+    topics: ClassVar[list[type[Topic[Any]]]] = [
+        AssistantEarsTopic,
+        AssistantTopic,
+        AssistantVoiceTopic,
+    ]
 
     @ws_handler(summary="Ping", description="Connection health check.")
     async def handle_ping(self, _message: PingMessage) -> PongMessage:

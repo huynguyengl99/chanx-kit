@@ -37,3 +37,35 @@ copied_at = "2026-09-27T15:39:48Z"
 component = "chanx-kit-ui:ag-ui"
 component_version = "0.1.0"
 variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/transcriber"
+source = "../../ui/transcriber"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:transcriber"
+component_version = "0.1.0"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/audio"
+source = "../../ui/audio"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:audio"
+component_version = "0.1.0"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/player"
+source = "../../ui/player"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:player"
+component_version = "0.1.0"
+variants = ["react"]
+
+[[sources]]
+path = "src/chanx-kit/voice-agent"
+source = "../../ui/voice-agent"
+copied_at = "2026-09-27T15:39:48Z"
+component = "chanx-kit-ui:voice-agent"
+component_version = "0.1.0"
+variants = ["react"]

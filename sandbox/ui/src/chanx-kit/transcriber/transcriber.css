@@ -1,0 +1,71 @@
+/* Default look for <Recorder> and <TranscriptView>. Theme every chanx-kit UI at once by
+   setting the --chanx-* variables at :root; the fallbacks are system colours. */
+.chanx-recorder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  font: var(--chanx-font, inherit);
+  color: var(--chanx-fg, CanvasText);
+}
+.chanx-recorder__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: inherit;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.chanx-recorder__toggle:disabled { opacity: 0.45; cursor: not-allowed; }
+.chanx-recorder__dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--chanx-muted, GrayText);
+}
+.chanx-recorder[data-state='recording'] .chanx-recorder__dot {
+  background: var(--chanx-error, #c0392b);
+  animation: chanx-recorder-pulse 1.2s ease-in-out infinite;
+}
+.chanx-recorder[data-state='starting'] .chanx-recorder__dot { background: var(--chanx-warning, #b7791f); }
+@keyframes chanx-recorder-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) {
+  .chanx-recorder[data-state='recording'] .chanx-recorder__dot { animation: none; }
+}
+.chanx-recorder__meter {
+  flex: 1;
+  min-width: 4rem;
+  max-width: 10rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, CanvasText 10%, transparent);
+}
+.chanx-recorder__meter > span {
+  display: block;
+  height: 100%;
+  background: var(--chanx-success, #1a7f4b);
+  transform-origin: left;
+  transition: transform 80ms linear;
+}
+.chanx-recorder__error { flex-basis: 100%; margin: 0; font-size: 0.85rem; color: var(--chanx-error, #c0392b); }
+.chanx-recorder :focus-visible { outline: 2px solid var(--chanx-accent, Highlight); outline-offset: 2px; }
+
+.chanx-transcript { font: var(--chanx-font, inherit); color: var(--chanx-fg, CanvasText); }
+.chanx-transcript__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+.chanx-transcript__utterance { line-height: 1.5; }
+.chanx-transcript__partial { color: var(--chanx-muted, GrayText); }
+.chanx-transcript__empty { color: var(--chanx-muted, GrayText); font-size: 0.9rem; }

@@ -10,7 +10,13 @@ from fastapi.requests import Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from sandbox.consumers import AgentConsumer, NotificationConsumer, RoomConsumer
+from sandbox.consumers import (
+    AgentConsumer,
+    AssistantConsumer,
+    NotificationConsumer,
+    RoomConsumer,
+    VoiceConsumer,
+)
 from sandbox.layers import setup_layers
 
 setup_layers()
@@ -45,6 +51,8 @@ ws = FastAPI()
 ws.router.add_websocket_route("/notifications", NotificationConsumer.as_asgi())
 ws.router.add_websocket_route("/rooms/{room}", RoomConsumer.as_asgi())
 ws.router.add_websocket_route("/agent", AgentConsumer.as_asgi())
+ws.router.add_websocket_route("/voice", VoiceConsumer.as_asgi())
+ws.router.add_websocket_route("/assistant", AssistantConsumer.as_asgi())
 app.mount("/ws", ws)
 
 if UI_DIST.is_dir():
