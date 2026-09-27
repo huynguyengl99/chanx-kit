@@ -44,7 +44,16 @@ install footprint that is exactly what you used.
 
 </div>
 
-## In one minute
+## Start a new project
+
+```bash
+uvx copit create gh:huynguyengl99/chanx-kit@main/templates/fastapi-react my-app
+```
+
+FastAPI and React, with the notification kit wired end to end.
+[Run it](getting-started.md#start-a-new-project).
+
+## Or add a kit in one minute
 
 ```bash
 copit add @chanx-kit/notification

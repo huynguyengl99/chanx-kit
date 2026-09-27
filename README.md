@@ -73,7 +73,7 @@ records where kits come from and where they land, in `copit.toml`:
 
 ```bash
 uvx copit init
-uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.1.0 --to app/ws_kits
+uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.3.1 --to app/ws_kits
 ```
 
 **Add a kit.** The source is copied into `app/ws_kits/notification/`, along with any kit

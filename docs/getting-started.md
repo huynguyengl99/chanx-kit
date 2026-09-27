@@ -1,5 +1,33 @@
 # Getting started
 
+## Start a new project
+
+One command creates a FastAPI backend and a React client with the notification kit
+already wired end to end, the client typed from the server's AsyncAPI schema:
+
+```bash
+uvx copit create gh:huynguyengl99/chanx-kit@main/templates/fastapi-react my-app
+cd my-app
+```
+
+Then run it:
+
+```bash
+uv sync
+npm --prefix web install
+
+uv run uvicorn app.main:app --reload     # API + WebSocket on :8000
+npm --prefix web run dev                 # UI on http://localhost:5173
+```
+
+The project comes with its own `copit.toml`, so [adding a kit](#add-a-kit) works right
+away. Its README covers the rest: sending from another process, and where things live.
+
+No copit? `npx tiged huynguyengl99/chanx-kit/templates/fastapi-react my-app` copies the
+same folder.
+
+The rest of this page adds kits to a project you already have.
+
 ## Install chanx
 
 Nothing is installed from this registry: kits are copied in. The only package they
@@ -25,14 +53,14 @@ built-in list of registries, so you tell it about this one once and it remembers
 
 ```bash
 uvx copit init
-uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.1.0 --to app/ws_kits
+uvx copit registry add chanx-kit github:huynguyengl99/chanx-kit@v0.3.1 --to app/ws_kits
 ```
 
 That records where the registry lives, where kits should land, and pins the version:
 
 ```toml
 [registries.chanx-kit]
-source = "github:huynguyengl99/chanx-kit@v0.1.0"
+source = "github:huynguyengl99/chanx-kit@v0.3.1"
 target = "app/ws_kits"
 ```
 
@@ -54,7 +82,7 @@ Later, to pick up upstream fixes:
 
 ```bash
 uvx copit update app/ws_kits/notification            # same pinned version
-uvx copit update app/ws_kits/notification --ref v0.2.0
+uvx copit update app/ws_kits/notification --ref <newer tag>
 ```
 
 Files you have edited are preserved if you list them in `excludes` in `copit.toml`.
