@@ -1,0 +1,24 @@
+name: pipecat-bridge
+title: Pipecat bridge
+description: >-
+  Run a Pipecat pipeline behind a chanx transcriber topic, so any of Pipecat's
+  speech-to-text services speaks the transcriber contract. chanx keeps the socket;
+  Pipecat never sees a transport.
+version: 0.1.0
+tier: contrib
+tags: [audio, speech-to-text, pipecat, bridge]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - audio-stream-in
+
+implements: [transcriber@1]
+
+dependencies:
+  - "chanx>=2.10.2,<3"
+  - "pipecat-ai>=1.3,<2"  # WorkerRunner arrived in 1.3
+
+optional:
+  tests:
+    requires:
+      - chanx-testing

@@ -11,7 +11,8 @@
   "exclude": [
     "**/__pycache__",
     "**/node_modules",
-    ".venv"
+    ".venv",
+    "kits/pipecat_bridge"
   ],
   "typeCheckingMode": "strict",
   "pythonVersion": "3.11",

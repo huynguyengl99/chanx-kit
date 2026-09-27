@@ -50,10 +50,30 @@ def _restricted_kit_paths() -> set[Path]:
 RESTRICTED_KITS = _restricted_kit_paths()
 
 
+_MISSING: dict[Path, bool] = {}
+
+
+def _needs_absent_package(kit: Path) -> bool:
+    """Whether a kit needs a package kept out of the dev environment (Pipecat)."""
+    if kit not in _MISSING:
+        import importlib
+
+        try:
+            importlib.import_module(f"kits.{kit.name}")
+            _MISSING[kit] = False
+        except ModuleNotFoundError as error:
+            _MISSING[kit] = not (error.name or "").startswith("kits")
+    return _MISSING[kit]
+
+
 def pytest_ignore_collect(collection_path: Path) -> bool | None:
     if any(
         collection_path == kit or kit in collection_path.parents
         for kit in RESTRICTED_KITS
     ):
         return True
+    kits = Path(__file__).parent / "kits"
+    for kit in (collection_path, *collection_path.parents):
+        if kit.parent == kits and (kit / "kit.yaml").exists():
+            return True if _needs_absent_package(kit) else None
     return None
