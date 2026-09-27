@@ -149,22 +149,27 @@ def check_published_files(project: Path, index: dict[str, Any]) -> list[str]:
 
 
 def check_imports(project: Path, components: dict[str, Any]) -> list[str]:
-    """The copied tree has to import."""
-    imports = "; ".join(
-        f"import app.ws_kits.{Path(component['path']).name}"
-        for component in components.values()
+    """Import each copied kit; one missing a third-party package is skipped, not failed."""
+    probe = (
+        "import importlib, sys; sys.path.insert(0, '.')\n"
+        "try:\n"
+        "    importlib.import_module(sys.argv[1])\n"
+        "except ModuleNotFoundError as error:\n"
+        "    if (error.name or '').startswith('app.'):\n"
+        "        raise\n"
+        "    print('missing', error.name)\n"
     )
-    result = run(
-        [
-            sys.executable,
-            "-c",
-            f"import sys; sys.path.insert(0, '.'); {imports}; print('ok')",
-        ],
-        project,
-    )
-    if result.returncode != 0:
-        return [f"copied tree does not import: {result.stderr.strip()[-400:]}"]
-    return []
+    problems: list[str] = []
+    for name, component in sorted(components.items()):
+        module = f"app.ws_kits.{Path(component['path']).name}"
+        result = run([sys.executable, "-c", probe, module], project)
+        if result.returncode != 0:
+            problems.append(f"{name} does not import: {result.stderr.strip()[-400:]}")
+        elif result.stdout.startswith("missing"):
+            print(
+                f"  skipped importing {name}: {result.stdout.split()[1]} is not installed"
+            )
+    return problems
 
 
 def check_optional_group(project: Path, copit: str) -> list[str]:
@@ -244,6 +249,52 @@ def check_restricted_kits_are_refused(
     return problems
 
 
+def check_parts(copit: str) -> list[str]:
+    """``--only stt`` installs one part that imports, without the other's base kit."""
+    help_text = run([copit, "add", "--help"], REPO_ROOT).stdout
+    if "--only" not in help_text:
+        print("  skipped the parts check: this copit predates parts")
+        return []
+
+    with tempfile.TemporaryDirectory(prefix="chanx-kit-parts-") as scratch:
+        project = Path(scratch)
+        (project / "pyproject.toml").write_text(PYPROJECT)
+        for command in (
+            [copit, "init"],
+            [copit, "registry", "add", "chanx-kit", str(REPO_ROOT), "--to", TARGET],
+            [
+                copit,
+                "add",
+                "@chanx-kit/deepgram",
+                "--only",
+                "stt",
+                "-y",
+                "--no-packages",
+            ],
+        ):
+            result = run(command, project)
+            if result.returncode != 0:
+                return [f"{' '.join(command)} failed: {result.stderr.strip()}"]
+
+        kits = project / TARGET
+        problems: list[str] = []
+        if not (kits / "deepgram" / "transcriber.py").exists():
+            problems.append("--only stt did not install deepgram/transcriber.py")
+        if (kits / "deepgram" / "synthesizer.py").exists():
+            problems.append("--only stt installed deepgram/synthesizer.py anyway")
+        if (kits / "audio_stream_out").exists():
+            problems.append(
+                "--only stt installed audio-stream-out, which only tts needs"
+            )
+        probe = "import sys; sys.path.insert(0, '.'); import app.ws_kits.deepgram.transcriber"
+        result = run([sys.executable, "-c", probe], project)
+        if result.returncode != 0:
+            problems.append(
+                f"deepgram --only stt does not import: {result.stderr.strip()[-300:]}"
+            )
+        return problems
+
+
 def check(project: Path, copit: str) -> list[str]:
     index = json.loads(REGISTRY_JSON.read_text())
     components = index["components"]
@@ -256,6 +307,7 @@ def check(project: Path, copit: str) -> list[str]:
     problems += check_imports(project, components)
     problems += check_optional_group(project, copit)
     problems += check_restricted_kits_are_refused(project, copit, components)
+    problems += check_parts(copit)
     return problems
 
 

@@ -42,7 +42,7 @@
       "title": "AG-UI",
       "description": "Serve the AG-UI agent-user interaction protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic: yield events from any agent. Optionally broadcasts a run to every connection on its thread, replaying it to one that joins part-way through.",
       "tier": "core",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "path": "kits/ag_ui",
       "tags": [
         "agent",
@@ -72,6 +72,94 @@
           "include": [
             "tests/__init__.py",
             "tests/test_ag_ui.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    },
+    "audio-stream-in": {
+      "name": "audio-stream-in",
+      "title": "Audio stream in",
+      "description": "Stream microphone audio in over the socket and get transcripts back, from any speech-to-text provider. Defines the transcriber contract; provider kits plug in a stream. Bounded streams, per-user limits, gap detection and watcher fan-out.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/audio_stream_in",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "transcription",
+        "streaming"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "media-stream-in"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "messages.py",
+        "provider.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/contract.py",
+            "tests/test_audio_stream_in.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    },
+    "audio-stream-out": {
+      "name": "audio-stream-out",
+      "title": "Audio stream out",
+      "description": "Speak text to a session's listeners from any text-to-speech provider. Defines the synthesizer contract; provider kits plug in audio. Utterances queue in order, an interruption clears them, late joiners are replayed, and playback marks record what was actually heard.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/audio_stream_out",
+      "tags": [
+        "audio",
+        "text-to-speech",
+        "synthesis",
+        "streaming"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "media-stream-out"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "messages.py",
+        "playback.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/contract.py",
+            "tests/test_audio_stream_out.py"
           ],
           "requires": [
             "chanx-testing"
@@ -149,6 +237,76 @@
         }
       }
     },
+    "deepgram": {
+      "name": "deepgram",
+      "title": "Deepgram",
+      "description": "Deepgram behind the voice contracts: live speech-to-text (Nova) and streaming text-to-speech (Aura). Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.",
+      "tier": "contrib",
+      "version": "0.1.0",
+      "path": "kits/deepgram",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "text-to-speech",
+        "deepgram",
+        "provider"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio-stream-in",
+        "audio-stream-out"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3",
+        "websockets>=13"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "synthesizer.py",
+        "transcriber.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/fake_listen.py",
+            "tests/fake_speak.py",
+            "tests/test_synthesizer.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      },
+      "parts": {
+        "stt": {
+          "include": [
+            "transcriber.py",
+            "tests/fake_listen.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "audio-stream-in"
+          ]
+        },
+        "tts": {
+          "include": [
+            "synthesizer.py",
+            "tests/fake_speak.py",
+            "tests/test_synthesizer.py"
+          ],
+          "requires": [
+            "audio-stream-out"
+          ]
+        }
+      }
+    },
     "django-message-store": {
       "name": "django-message-store",
       "title": "Django message store",
@@ -198,6 +356,214 @@
         ]
       }
     },
+    "elevenlabs": {
+      "name": "elevenlabs",
+      "title": "ElevenLabs",
+      "description": "ElevenLabs behind the voice contracts: realtime speech-to-text (Scribe) and streaming text-to-speech. Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.",
+      "tier": "contrib",
+      "version": "0.1.0",
+      "path": "kits/elevenlabs",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "text-to-speech",
+        "elevenlabs",
+        "provider"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio-stream-in",
+        "audio-stream-out"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3",
+        "websockets>=13"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "synthesizer.py",
+        "transcriber.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/fake_scribe.py",
+            "tests/fake_stream_input.py",
+            "tests/test_synthesizer.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      },
+      "parts": {
+        "stt": {
+          "include": [
+            "transcriber.py",
+            "tests/fake_scribe.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "audio-stream-in"
+          ]
+        },
+        "tts": {
+          "include": [
+            "synthesizer.py",
+            "tests/fake_stream_input.py",
+            "tests/test_synthesizer.py"
+          ],
+          "requires": [
+            "audio-stream-out"
+          ]
+        }
+      }
+    },
+    "fake-voice": {
+      "name": "fake-voice",
+      "title": "Fake voice",
+      "description": "A transcriber and a synthesizer that need no provider and no key: speech is transcribed as a scripted sentence, text is spoken as a tone per word. For demos, UI work and CI. Install both, or one part with `--only stt` or `--only tts`.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/fake_voice",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "text-to-speech",
+        "testing",
+        "demo"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio-stream-in",
+        "audio-stream-out"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "synthesizer.py",
+        "transcriber.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_synthesizer.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      },
+      "parts": {
+        "stt": {
+          "include": [
+            "transcriber.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "audio-stream-in"
+          ]
+        },
+        "tts": {
+          "include": [
+            "synthesizer.py",
+            "tests/test_synthesizer.py"
+          ],
+          "requires": [
+            "audio-stream-out"
+          ]
+        }
+      }
+    },
+    "media-stream-in": {
+      "name": "media-stream-in",
+      "title": "Media stream in",
+      "description": "The plumbing for media a client streams in: bytes that travel as base64, chunks put back in order with gaps reported, and a bounded real-time intake with keepalive and idle handling. The base the audio kits build on.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/media_stream_in",
+      "tags": [
+        "media",
+        "streaming",
+        "audio",
+        "bytes"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [
+        "chanx>=2.10.2,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "data.py",
+        "intake.py",
+        "sequencer.py"
+      ],
+      "optional": {
+        "tests": [
+          "tests/__init__.py",
+          "tests/test_media_stream_in.py"
+        ]
+      }
+    },
+    "media-stream-out": {
+      "name": "media-stream-out",
+      "title": "Media stream out",
+      "description": "The plumbing for media the server streams out: producers run one at a time per session and can be cut off as a whole, and what was sent is kept so a connection joining part-way is replayed. The base the speech output kits build on.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/media_stream_out",
+      "tags": [
+        "media",
+        "streaming",
+        "audio",
+        "replay"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "media-stream-in"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "jobs.py",
+        "replay.py"
+      ],
+      "optional": {
+        "tests": [
+          "tests/__init__.py",
+          "tests/test_media_stream_out.py"
+        ]
+      }
+    },
     "notification": {
       "name": "notification",
       "title": "Notification",
@@ -230,6 +596,123 @@
           "include": [
             "tests/__init__.py",
             "tests/test_notification.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      }
+    },
+    "openai": {
+      "name": "openai",
+      "title": "OpenAI",
+      "description": "OpenAI behind the voice contracts: realtime transcription and text-to-speech. Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.",
+      "tier": "contrib",
+      "version": "0.1.0",
+      "path": "kits/openai",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "text-to-speech",
+        "openai",
+        "provider"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio-stream-in",
+        "audio-stream-out"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3",
+        "websockets>=13",
+        "httpx>=0.27"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "synthesizer.py",
+        "transcriber.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/fake_realtime.py",
+            "tests/test_synthesizer.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "chanx-testing"
+          ]
+        }
+      },
+      "parts": {
+        "stt": {
+          "include": [
+            "transcriber.py",
+            "tests/fake_realtime.py",
+            "tests/test_transcriber.py"
+          ],
+          "requires": [
+            "audio-stream-in"
+          ],
+          "dependencies": [
+            "websockets>=13"
+          ]
+        },
+        "tts": {
+          "include": [
+            "synthesizer.py",
+            "tests/test_synthesizer.py"
+          ],
+          "requires": [
+            "audio-stream-out"
+          ],
+          "dependencies": [
+            "httpx>=0.27"
+          ]
+        }
+      }
+    },
+    "pipecat-bridge": {
+      "name": "pipecat-bridge",
+      "title": "Pipecat bridge",
+      "description": "Run a Pipecat pipeline behind a chanx transcriber topic, so any of Pipecat's speech-to-text services speaks the transcriber contract. chanx keeps the socket; Pipecat never sees a transport.",
+      "tier": "contrib",
+      "version": "0.1.0",
+      "path": "kits/pipecat_bridge",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "pipecat",
+        "bridge"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio-stream-in"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3",
+        "pipecat-ai>=1.3,<2"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_pipecat_bridge.py"
           ],
           "requires": [
             "chanx-testing"
@@ -396,6 +879,55 @@
           ],
           "requires": [
             "chanx-testing"
+          ]
+        }
+      }
+    },
+    "voice-agent": {
+      "name": "voice-agent",
+      "title": "Voice agent",
+      "description": "Talk to any AG-UI agent: speech is transcribed, each utterance starts a run, the reply is spoken sentence by sentence as it streams, and speaking over it interrupts, keeping only what was heard. Provider-agnostic on all three sides.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "kits/voice_agent",
+      "tags": [
+        "voice",
+        "agent",
+        "ag-ui",
+        "speech-to-text",
+        "text-to-speech",
+        "barge-in"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "ag-ui",
+        "audio-stream-in",
+        "audio-stream-out"
+      ],
+      "dependencies": [
+        "chanx>=2.10.2,<3",
+        "ag-ui-protocol>=0.1.19"
+      ],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "__init__.py",
+        "memory.py",
+        "sentences.py",
+        "topics.py"
+      ],
+      "optional": {
+        "tests": {
+          "include": [
+            "tests/__init__.py",
+            "tests/test_voice_agent.py"
+          ],
+          "requires": [
+            "chanx-testing",
+            "fake-voice"
           ]
         }
       }

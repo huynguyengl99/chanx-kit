@@ -177,6 +177,43 @@ def expand_variants(variants: dict[str, Any], files: list[str]) -> dict[str, Any
     return expanded
 
 
+def build_parts(
+    name: str, data: dict[str, Any], files: list[str], group_files: dict[str, list[str]]
+) -> tuple[dict[str, Any], list[Problem]]:
+    """A kit's parts for the index; all a part lists must be on the kit, for copit < 0.9."""
+    declared: dict[str, Any] = data.get("parts") or {}
+    every_file = [*files, *(f for paths in group_files.values() for f in paths)]
+    problems: list[Problem] = []
+    parts: dict[str, Any] = {}
+    for part, raw in declared.items():
+        spec: dict[str, Any] = raw or {}
+        include = [f for f in every_file if matches(f, list(spec.get("include", [])))]
+        for pattern in spec.get("include", []):
+            if not any(fnmatch.fnmatch(f, pattern) for f in every_file):
+                problems.append(
+                    Problem(
+                        name,
+                        f"part {part!r} includes {pattern!r}, which matches no file",
+                    )
+                )
+        for key in ("requires", "dependencies", "implements"):
+            missing = set(spec.get(key) or []) - set(data.get(key) or [])
+            if missing:
+                problems.append(
+                    Problem(
+                        name,
+                        f"part {part!r} lists {key} {sorted(missing)} the kit does not; "
+                        "a copit without parts would install the kit without them",
+                    )
+                )
+        entry: dict[str, Any] = {"include": include}
+        for key in ("requires", "dependencies"):
+            if spec.get(key):
+                entry[key] = list(spec[key])
+        parts[part] = entry
+    return parts, problems
+
+
 def build(layout: Layout = SERVER) -> tuple[Registry, list[Problem]]:
     config = load_yaml(layout.manifest)
     problems: list[Problem] = []
@@ -253,6 +290,8 @@ def build(layout: Layout = SERVER) -> tuple[Registry, list[Problem]]:
                 )
         optional = optional_groups_for(group_files, declared)
         variants = expand_variants(variants, files)
+        parts, part_problems = build_parts(name, data, files, group_files)
+        problems.extend(part_problems)
         registry.contracts[name] = {
             key: data[key]
             for key in ("defines", "contract_topic", "implements", "consumes")
@@ -274,6 +313,7 @@ def build(layout: Layout = SERVER) -> tuple[Registry, list[Problem]]:
             "only_variants": only_variants,
             "files": files,
             "optional": optional,
+            **({"parts": parts} if parts else {}),
         }
 
     problems.extend(validate_graph(registry))

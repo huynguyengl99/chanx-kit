@@ -185,14 +185,24 @@ def test_registry_json_parses_as_the_documented_shape() -> None:
     assert document["ecosystem"] == "python"
     assert set(document["components"]) == {
         "ag-ui",
+        "audio-stream-in",
+        "audio-stream-out",
         "chanx-testing",
         "conversation-store",
+        "deepgram",
         "django-message-store",
+        "elevenlabs",
+        "fake-voice",
+        "media-stream-in",
+        "media-stream-out",
         "notification",
+        "openai",
+        "pipecat-bridge",
         "presence",
         "pydantic-ai-ag-ui",
         "redis-presence-store",
         "room-chat",
+        "voice-agent",
     }
     assert document["components"]["pydantic-ai-ag-ui"]["requires"] == [
         "ag-ui",
@@ -362,3 +372,39 @@ def test_only_react_variant_files_import_react() -> None:
             assert "from 'react'" not in source and "/react'" not in source, (
                 f"{name}/{file} imports React outside the react variant"
             )
+
+
+def test_provider_kits_publish_their_parts_subtractively() -> None:
+    """copit before 0.9 ignores parts and installs the whole kit, so the kit itself must
+    carry everything its parts need."""
+    registry, _ = registry_module.build()
+
+    for name in ("deepgram", "elevenlabs", "openai", "fake-voice"):
+        component = registry.components[name]
+        parts = component["parts"]
+        assert set(parts) == {"stt", "tts"}, name
+        assert "transcriber.py" in parts["stt"]["include"], name
+        assert "synthesizer.py" in parts["tts"]["include"], name
+        for part in parts.values():
+            assert set(part.get("requires", [])) <= set(component["requires"]), name
+            assert set(part.get("dependencies", [])) <= set(
+                component["dependencies"]
+            ), name
+            assert set(part["include"]) <= {
+                *component["files"],
+                *component["optional"]["tests"]["include"],
+            }, name
+
+
+def test_a_part_listing_what_its_kit_lacks_is_a_problem() -> None:
+    data = {
+        "requires": ["a"],
+        "parts": {"x": {"include": ["x.py"], "requires": ["a", "b"]}},
+    }
+
+    _, problems = registry_module.build_parts("kit", data, ["x.py"], {})
+
+    assert [str(p) for p in problems] == [
+        "kit: part 'x' lists requires ['b'] the kit does not; "
+        "a copit without parts would install the kit without them"
+    ]

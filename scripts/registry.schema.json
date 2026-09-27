@@ -259,6 +259,34 @@
           "additionalProperties": {
             "$ref": "#/$defs/optionalGroup"
           }
+        },
+        "parts": {
+          "description": "Parts an install may leave out with `--only` / `--without`. Subtractive: every part's files, requires and dependencies are also listed on the component itself, so a copit that ignores parts installs the whole component. Leaving a part out drops whatever only it lists.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "include": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "requires": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
         }
       }
     }
