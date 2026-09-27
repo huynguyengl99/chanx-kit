@@ -1,0 +1,43 @@
+/* Default look for <VoiceAgent>. Theme every chanx-kit UI at once by setting the
+   --chanx-* variables at :root; the fallbacks are system colours. */
+.chanx-voice-agent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  font: var(--chanx-font, inherit);
+  color: var(--chanx-fg, CanvasText);
+  background: var(--chanx-bg, Canvas);
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: var(--chanx-radius, 10px);
+}
+.chanx-voice-agent__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.chanx-voice-agent__head h2 { font-size: 1rem; margin: 0; }
+.chanx-voice-agent__status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--chanx-muted, GrayText);
+}
+.chanx-voice-agent[data-status='listening'] .chanx-voice-agent__status { color: var(--chanx-success, #1a7f4b); }
+.chanx-voice-agent[data-status='thinking'] .chanx-voice-agent__status { color: var(--chanx-warning, #b7791f); }
+.chanx-voice-agent[data-status='speaking'] .chanx-voice-agent__status { color: var(--chanx-accent, #2f6feb); }
+.chanx-voice-agent__reply {
+  min-height: 3rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--chanx-accent, #2f6feb) 10%, transparent);
+  line-height: 1.5;
+}
+.chanx-voice-agent__reply:empty { display: none; }
+.chanx-voice-agent__interrupt {
+  align-self: flex-start;
+  font: inherit;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.chanx-voice-agent :focus-visible { outline: 2px solid var(--chanx-accent, Highlight); outline-offset: 2px; }

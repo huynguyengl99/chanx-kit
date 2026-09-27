@@ -1,0 +1,22 @@
+name: voice-agent
+title: Voice agent
+description: >-
+  Talk to an agent: an open microphone, live captions, the reply spoken as it streams,
+  and interrupting by speaking. Composes the transcriber, player and ag-ui UI kits over
+  one session.
+version: 0.1.0
+tier: core
+tags: [voice, agent, ag-ui, barge-in]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+requires:
+  - ag-ui
+  - player
+  - transcriber
+
+dependencies:
+  - "@chanx-js/client@^0.1.2"
+
+variants:
+  react:
+    include: ["react/**"]

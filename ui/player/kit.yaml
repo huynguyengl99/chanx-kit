@@ -1,0 +1,22 @@
+name: player
+title: Player
+description: >-
+  Play what a server speaks, for any server speaking the synthesizer contract. Headless
+  playback with a jitter buffer, instant interruption and playback marks back to the
+  server, plus a React player.
+version: 0.1.0
+tier: core
+tags: [audio, text-to-speech, playback]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+consumes: [synthesizer@1]
+
+requires:
+  - audio
+
+dependencies:
+  - "@chanx-js/client@^0.1.2"
+
+variants:
+  react:
+    include: ["react/**"]

@@ -1,0 +1,10 @@
+name: audio
+title: Audio helpers
+description: >-
+  The pure audio helpers the voice UI kits share: resampling, PCM16 conversion,
+  fixed-duration chunking, levels and base64. No browser APIs, so they run and test
+  anywhere.
+version: 0.1.0
+tier: core
+tags: [audio, pcm, base64]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]

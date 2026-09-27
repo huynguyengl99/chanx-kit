@@ -1,0 +1,22 @@
+name: transcriber
+title: Transcriber
+description: >-
+  Record from the microphone and show live captions, for any server speaking the
+  transcriber contract. Headless capture (resampled PCM16 in numbered chunks), a
+  transcript store, and React recorder and caption components.
+version: 0.1.0
+tier: core
+tags: [audio, speech-to-text, microphone, captions]
+authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
+
+consumes: [transcriber@1]
+
+requires:
+  - audio
+
+dependencies:
+  - "@chanx-js/client@^0.1.2"
+
+variants:
+  react:
+    include: ["react/**"]

@@ -62,6 +62,32 @@
       ],
       "optional": {}
     },
+    "audio": {
+      "name": "audio",
+      "title": "Audio helpers",
+      "description": "The pure audio helpers the voice UI kits share: resampling, PCM16 conversion, fixed-duration chunking, levels and base64. No browser APIs, so they run and test anywhere.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/audio",
+      "tags": [
+        "audio",
+        "pcm",
+        "base64"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [],
+      "dependencies": [],
+      "variants": {},
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "core.ts",
+        "index.ts"
+      ],
+      "optional": {}
+    },
     "chat": {
       "name": "chat",
       "title": "Chat room",
@@ -144,6 +170,50 @@
       ],
       "optional": {}
     },
+    "player": {
+      "name": "player",
+      "title": "Player",
+      "description": "Play what a server speaks, for any server speaking the synthesizer contract. Headless playback with a jitter buffer, instant interruption and playback marks back to the server, plus a React player.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/player",
+      "tags": [
+        "audio",
+        "text-to-speech",
+        "playback"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio"
+      ],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/Player.tsx",
+            "react/index.ts",
+            "react/usePlayer.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "contract.ts",
+        "core.ts",
+        "index.ts",
+        "player.css",
+        "react/Player.tsx",
+        "react/index.ts",
+        "react/usePlayer.ts",
+        "speaker.ts"
+      ],
+      "optional": {}
+    },
     "presence": {
       "name": "presence",
       "title": "Presence roster",
@@ -181,6 +251,100 @@
         "react/PresenceRoster.tsx",
         "react/index.ts",
         "react/usePresence.ts"
+      ],
+      "optional": {}
+    },
+    "transcriber": {
+      "name": "transcriber",
+      "title": "Transcriber",
+      "description": "Record from the microphone and show live captions, for any server speaking the transcriber contract. Headless capture (resampled PCM16 in numbered chunks), a transcript store, and React recorder and caption components.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/transcriber",
+      "tags": [
+        "audio",
+        "speech-to-text",
+        "microphone",
+        "captions"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "audio"
+      ],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/Recorder.tsx",
+            "react/TranscriptView.tsx",
+            "react/index.ts",
+            "react/useTranscriber.ts",
+            "react/useTranscript.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "contract.ts",
+        "core.ts",
+        "index.ts",
+        "microphone.ts",
+        "react/Recorder.tsx",
+        "react/TranscriptView.tsx",
+        "react/index.ts",
+        "react/useTranscriber.ts",
+        "react/useTranscript.ts",
+        "transcriber.css"
+      ],
+      "optional": {}
+    },
+    "voice-agent": {
+      "name": "voice-agent",
+      "title": "Voice agent",
+      "description": "Talk to an agent: an open microphone, live captions, the reply spoken as it streams, and interrupting by speaking. Composes the transcriber, player and ag-ui UI kits over one session.",
+      "tier": "core",
+      "version": "0.1.0",
+      "path": "ui/voice-agent",
+      "tags": [
+        "voice",
+        "agent",
+        "ag-ui",
+        "barge-in"
+      ],
+      "authors": [
+        "Huy Nguyen <ndhgl99@gmail.com>"
+      ],
+      "requires": [
+        "ag-ui",
+        "player",
+        "transcriber"
+      ],
+      "dependencies": [
+        "@chanx-js/client@^0.1.2"
+      ],
+      "variants": {
+        "react": {
+          "include": [
+            "react/VoiceAgent.tsx",
+            "react/index.ts",
+            "react/useVoiceAgent.ts"
+          ]
+        }
+      },
+      "only_variants": [],
+      "files": [
+        "README.md",
+        "core.ts",
+        "index.ts",
+        "react/VoiceAgent.tsx",
+        "react/index.ts",
+        "react/useVoiceAgent.ts",
+        "voice-agent.css"
       ],
       "optional": {}
     }

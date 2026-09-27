@@ -1,0 +1,43 @@
+/* Default look for <Player>. Theme every chanx-kit UI at once by setting the --chanx-*
+   variables at :root; the fallbacks are system colours. */
+.chanx-player {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font: var(--chanx-font, inherit);
+  color: var(--chanx-fg, CanvasText);
+}
+.chanx-player__text { grid-column: 1 / -1; margin: 0; line-height: 1.5; }
+.chanx-player[data-state='idle'] .chanx-player__text { color: var(--chanx-muted, GrayText); }
+.chanx-player__progress {
+  height: 0.35rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, CanvasText 10%, transparent);
+}
+.chanx-player__progress > span {
+  display: block;
+  height: 100%;
+  background: var(--chanx-accent, #2f6feb);
+  transform-origin: left;
+  transition: transform 120ms linear;
+}
+.chanx-player__stop,
+.chanx-player__unlock {
+  font: inherit;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--chanx-line, color-mix(in srgb, CanvasText 15%, transparent));
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.chanx-player__unlock {
+  grid-column: 1 / -1;
+  justify-self: start;
+  border-color: var(--chanx-accent, #2f6feb);
+}
+.chanx-player__stop:disabled { opacity: 0.45; cursor: not-allowed; }
+.chanx-player__error { grid-column: 1 / -1; margin: 0; font-size: 0.85rem; color: var(--chanx-error, #c0392b); }
+.chanx-player :focus-visible { outline: 2px solid var(--chanx-accent, Highlight); outline-offset: 2px; }
