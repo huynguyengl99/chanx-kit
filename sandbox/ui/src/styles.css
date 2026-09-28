@@ -21,9 +21,31 @@ body {
   background: var(--bg);
   font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
-main { max-width: 76rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
-header p { color: var(--muted); max-width: 44rem; }
-h1 { font-size: 1.75rem; letter-spacing: -0.02em; margin-bottom: .25rem; }
+a { color: var(--accent); text-decoration: none; }
+h1 { font-size: 1.25rem; letter-spacing: -0.02em; margin: 0; }
+.shell { display: grid; grid-template-columns: 15rem minmax(0, 1fr); min-height: 100vh; }
+.sidebar { position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; padding: 1.75rem 1.25rem; border-right: 1px solid var(--line); background: var(--panel); }
+.sidebar label { flex-direction: column; align-items: stretch; gap: .3rem; }
+.nav-group { display: flex; flex-direction: column; gap: .1rem; margin-bottom: .75rem; }
+.nav-title { margin: 0 0 .25rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.nav-group a { padding: .35rem .6rem; border-radius: 7px; color: inherit; font-size: .92rem; }
+.nav-group a:hover { background: color-mix(in srgb, var(--line) 45%, transparent); }
+.nav-group a[aria-current='page'] { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-weight: 600; }
+main { padding: 2.25rem 2rem 4rem; max-width: 52rem; width: 100%; }
+.demo-head { margin-bottom: 1.5rem; }
+.demo-head h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
+.demo-head p { color: var(--muted); margin: .35rem 0 1rem; }
+.demo-meta { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1rem; margin: 0; font-size: .85rem; }
+.demo-meta dt { color: var(--muted); }
+.demo-meta dd { margin: 0; display: flex; flex-wrap: wrap; gap: .35rem; }
+@media (max-width: 48rem) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 1rem; gap: .75rem; }
+  .sidebar nav { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+  .nav-group { flex-direction: row; flex-wrap: wrap; align-items: center; margin: 0; }
+  .nav-title { margin: 0 .25rem 0 0; }
+  main { padding: 1.25rem 1rem 3rem; }
+}
 h2 { font-size: 1rem; margin: 0; letter-spacing: -0.01em; }
 code { background: color-mix(in srgb, var(--line) 60%, transparent); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
 label { display: inline-flex; gap: .5rem; align-items: center; color: var(--muted); font-size: .9rem; }
@@ -37,7 +59,6 @@ button {
 }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.ghost { background: transparent; border-color: var(--line); color: inherit; }
-.grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); margin-top: 2rem; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.2rem 1.2rem; display: flex; flex-direction: column; gap: .8rem; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 .status { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }

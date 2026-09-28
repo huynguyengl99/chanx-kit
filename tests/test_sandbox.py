@@ -139,3 +139,13 @@ def test_every_kit_message_is_reachable_from_the_sandbox(spec: dict[str, Any]) -
         f"These kit messages are not exposed by any sandbox consumer, so no CI check "
         f"freezes their wire contract: {uncovered}. Mount the kit in sandbox/consumers.py."
     )
+
+
+def test_the_ui_can_tell_which_providers_serve_voice() -> None:
+    from fastapi.testclient import TestClient
+    from sandbox.main import app
+
+    providers = TestClient(app).get("/api/providers").json()
+
+    assert providers["stt"] in {"deepgram", "fake-voice"}
+    assert providers["tts"] in {"elevenlabs", "fake-voice"}

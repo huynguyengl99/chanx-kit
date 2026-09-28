@@ -7,6 +7,7 @@ export default defineConfig({
     proxy: {
       '/ws': { target: 'ws://localhost:8000', ws: true },
       '/asyncapi': 'http://localhost:8000',
+      '/api': 'http://localhost:8000',
     },
   },
   build: { outDir: 'dist', emptyOutDir: true },

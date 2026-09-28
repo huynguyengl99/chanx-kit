@@ -143,9 +143,10 @@ npm --prefix sandbox/ui install && npm --prefix sandbox/ui run build
 uv run python -m sandbox
 ```
 
-Open **http://localhost:8000** for one panel per kit, plus
-[AsyncAPI docs](http://localhost:8000/asyncapi) for the generated WebSocket API. Open a
-second tab in the Room panel to watch history replay and the roster update live.
+Open **http://localhost:8000**: a sidebar of demos grouped like the docs, each naming
+the kits and consumer it runs, plus [AsyncAPI docs](http://localhost:8000/asyncapi) for
+the generated WebSocket API. Open the chat room in a second tab to watch history replay
+and the roster update live.
 
 ## Why it exists
 

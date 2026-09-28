@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from sandbox.consumers import (
+    PROVIDERS,
     AgentConsumer,
     AssistantConsumer,
     NotificationConsumer,
@@ -45,6 +46,12 @@ async def asyncapi_json(request: Request) -> JSONResponse:
 @app.get("/asyncapi.yaml", tags=["docs"])
 async def asyncapi_yaml(request: Request) -> Response:
     return await asyncapi_spec_yaml(request=request, app=app, config=asyncapi_config)
+
+
+@app.get("/api/providers", tags=["sandbox"])
+async def providers() -> dict[str, str]:
+    """Which provider kit serves speech to text and text to speech."""
+    return PROVIDERS
 
 
 ws = FastAPI()

@@ -18,13 +18,15 @@ npm --prefix sandbox/ui install && npm --prefix sandbox/ui run build
 uv run python -m sandbox
 ```
 
-Voice panels use Deepgram and ElevenLabs when `DEEPGRAM_API_KEY` / `ELEVENLABS_API_KEY`
+Voice demos use Deepgram and ElevenLabs when `DEEPGRAM_API_KEY` / `ELEVENLABS_API_KEY`
 are set, in the environment or a git-ignored `.env` at the repo root, and the fake
 provider otherwise. The startup banner says which.
 
-Open **http://localhost:8000** for one panel per kit, and
-**http://localhost:8000/asyncapi** for the generated WebSocket API docs. The startup
-banner tells you which channel layer is active and whether the UI has been built.
+Open **http://localhost:8000** for the demos, one page each in a sidebar
+(`src/demos.tsx`), and **http://localhost:8000/asyncapi** for the generated WebSocket
+API docs. Each demo has its own link, such as `/#/voice-agent`, and only the open one
+holds a socket. The startup banner tells you which channel layer is active and whether
+the UI has been built.
 
 For UI work, run Vite separately so you get hot reload. It proxies `/ws` to the server:
 
@@ -43,7 +45,7 @@ npm --prefix sandbox/ui run dev   # terminal 2, http://localhost:5173
 | `/ws/voice` | `VoiceConsumer` | audio-stream-in, audio-stream-out |
 | `/ws/assistant` | `AssistantConsumer` | voice-agent |
 
-Open a second tab on the Room panel to watch history replay and the roster update live.
+Open the chat room in a second tab to watch history replay and the roster update live.
 
 ## Across processes
 

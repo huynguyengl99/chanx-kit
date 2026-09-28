@@ -86,9 +86,12 @@ const check = (name, ok, detail) => {
 };
 
 await page.goto(base);
+// Each demo is its own page in the sidebar; only the open one holds a socket.
+const open = (title) => page.getByRole('navigation', { name: 'Demos' }).getByRole('link', { name: title }).click();
 
 // 1. Speech to text: audio goes up in order and a transcript comes back.
 {
+  await open('Speech to text');
   const panel = page.locator('section.panel', { hasText: 'speech to text' });
   await panel.locator('.status', { hasText: 'open' }).waitFor({ timeout: 10000 });
   await panel.getByRole('button', { name: 'Start recording' }).click();
@@ -112,6 +115,7 @@ await page.goto(base);
 
 // 2. Text to speech: audio arrives and playback marks go back.
 {
+  await open('Text to speech');
   const panel = page.locator('section.panel', { hasText: 'text to speech' });
   await panel.getByRole('button', { name: 'Speak' }).click();
   await page.waitForTimeout(4000);
@@ -123,6 +127,7 @@ await page.goto(base);
 
 // 3. Voice agent: a spoken turn is answered out loud.
 {
+  await open('Voice agent');
   const agent = page.locator('.chanx-voice-agent');
   await agent.getByRole('button', { name: 'Start talking' }).click();
   await page.waitForTimeout(5000);

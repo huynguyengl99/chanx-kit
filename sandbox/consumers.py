@@ -154,6 +154,10 @@ class AgentConsumer(AsyncJsonWebsocketConsumer[AgUiEventMessage]):
 
 
 # A real provider when its key is set, the fake otherwise; the client cannot tell.
+PROVIDERS = {
+    "stt": "deepgram" if os.environ.get("DEEPGRAM_API_KEY") else "fake-voice",
+    "tts": "elevenlabs" if os.environ.get("ELEVENLABS_API_KEY") else "fake-voice",
+}
 if TYPE_CHECKING:
     TranscriberBase = FakeTranscriberTopic
     SynthesizerBase = FakeSynthesizerTopic
@@ -163,12 +167,12 @@ else:
 
     TranscriberBase = (
         DeepgramTranscriberTopic
-        if os.environ.get("DEEPGRAM_API_KEY")
+        if PROVIDERS["stt"] == "deepgram"
         else FakeTranscriberTopic
     )
     SynthesizerBase = (
         ElevenLabsSynthesizerTopic
-        if os.environ.get("ELEVENLABS_API_KEY")
+        if PROVIDERS["tts"] == "elevenlabs"
         else FakeSynthesizerTopic
     )
 
