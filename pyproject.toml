@@ -6,11 +6,13 @@ requires = ["hatchling"]
 dev = [
   "ag-ui-protocol>=0.1.22",
   "fakeredis>=2.26",
+  "httpx>=0.27.0,<1",
   "pydantic-ai-slim[ag-ui]>=2.13",
   "pytest-asyncio>=1.2.0",
   "pytest-cov>=6.1.1,<7",
   "pytest-mock>=3.14.0,<4",
-  "pytest>=8.3.5,<9"
+  "pytest>=8.3.5,<9",
+  "websockets>=13"
 ]
 dev-django = [
   "channels-redis>=4,<5",

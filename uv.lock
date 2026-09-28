@@ -430,11 +430,13 @@ fastapi = [
 dev = [
     { name = "ag-ui-protocol" },
     { name = "fakeredis" },
+    { name = "httpx" },
     { name = "pydantic-ai-slim", extra = ["ag-ui"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
+    { name = "websockets" },
 ]
 dev-django = [
     { name = "ag-ui-protocol" },
@@ -445,6 +447,7 @@ dev-django = [
     { name = "djangorestframework" },
     { name = "djangorestframework-stubs" },
     { name = "fakeredis" },
+    { name = "httpx" },
     { name = "pydantic-ai-slim", extra = ["ag-ui"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -452,6 +455,7 @@ dev-django = [
     { name = "pytest-django" },
     { name = "pytest-mock" },
     { name = "types-channels" },
+    { name = "websockets" },
 ]
 dev-fastapi = [
     { name = "ag-ui-protocol" },
@@ -466,6 +470,7 @@ dev-fastapi = [
     { name = "pytest-mock" },
     { name = "python-dotenv" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "websockets" },
 ]
 docs = [
     { name = "copit" },
@@ -515,11 +520,13 @@ provides-extras = ["django", "fastapi"]
 dev = [
     { name = "ag-ui-protocol", specifier = ">=0.1.22" },
     { name = "fakeredis", specifier = ">=2.26" },
+    { name = "httpx", specifier = ">=0.27.0,<1" },
     { name = "pydantic-ai-slim", extras = ["ag-ui"], specifier = ">=2.13" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-cov", specifier = ">=6.1.1,<7" },
     { name = "pytest-mock", specifier = ">=3.14.0,<4" },
+    { name = "websockets", specifier = ">=13" },
 ]
 dev-django = [
     { name = "ag-ui-protocol", specifier = ">=0.1.22" },
@@ -530,6 +537,7 @@ dev-django = [
     { name = "djangorestframework", specifier = ">=3.15" },
     { name = "djangorestframework-stubs", specifier = ">=3.15" },
     { name = "fakeredis", specifier = ">=2.26" },
+    { name = "httpx", specifier = ">=0.27.0,<1" },
     { name = "pydantic-ai-slim", extras = ["ag-ui"], specifier = ">=2.13" },
     { name = "pytest", specifier = ">=8.3.5,<9" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
@@ -537,6 +545,7 @@ dev-django = [
     { name = "pytest-django", specifier = ">=4.11.1,<5" },
     { name = "pytest-mock", specifier = ">=3.14.0,<4" },
     { name = "types-channels", specifier = ">=4.2.0.20250712" },
+    { name = "websockets", specifier = ">=13" },
 ]
 dev-fastapi = [
     { name = "ag-ui-protocol", specifier = ">=0.1.22" },
@@ -551,6 +560,7 @@ dev-fastapi = [
     { name = "pytest-mock", specifier = ">=3.14.0,<4" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0" },
+    { name = "websockets", specifier = ">=13" },
 ]
 docs = [
     { name = "copit", specifier = ">=0.7" },
