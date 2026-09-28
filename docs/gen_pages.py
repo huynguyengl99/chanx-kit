@@ -562,6 +562,12 @@ for old, new in {
     "(kits/README.md)": f"({REPO_URL}/blob/main/kits/README.md)",
 }.items():
     contributing = contributing.replace(old, new)
+# A kit's README is its docs page there.
+contributing = re.sub(
+    r"\(kits/(\w+)/README\.md",
+    lambda m: f"(kits/{m[1].replace('_', '-')}.md",
+    contributing,
+)
 
 with mkdocs_gen_files.open("contributing.md", "w") as handle:
     handle.write(contributing)

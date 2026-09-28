@@ -40,6 +40,9 @@ uv run pre-commit install
 you touch a kit checks that `copit-registry.json` is still current, which is the thing
 easiest to forget and most annoying to discover in CI.
 
+For the sandbox's cross-process demos and live provider checks, copy `.env.example` to
+`.env` (git-ignored) and `docker compose up -d` for Redis. The test suite reads neither.
+
 ## Checklist for a new kit
 
 1. `kits/<package_name>/` with a directory name that is a valid Python identifier
@@ -49,11 +52,16 @@ easiest to forget and most annoying to discover in CI.
 4. `topics.py`; see [docs/authoring-a-kit.md](docs/authoring-a-kit.md)
 5. `README.md` with an install line, minimal usage, a hook table and production caveats
 6. `tests/test_<kit>.py`, which must pass on **both** backends. If the kit wraps a
-   third-party library, cover the *default* path too, not just a stubbed override.
-   A kit that genuinely cannot run on both declares `only_variants` instead; see below
+   third-party library, cover the *default* path too, not just a stubbed override, and
+   add its `dependencies` to the `dev` group in `pyproject.toml` so both backend legs
+   can import it. A kit that genuinely cannot run on both declares `only_variants`
+   instead; see below
 7. Mount it in `sandbox/consumers.py`, so its messages reach the AsyncAPI schema that
-   freezes the wire contract
-8. `uv run python scripts/registry.py build` to regenerate the index
+   freezes the wire contract. If it has a UI kit, give it a page in
+   `sandbox/ui/src/demos.tsx`
+8. A feature users install gets a line in `docs/recipes.yaml` and the README's feature
+   table: the one command that installs its server and UI halves
+9. `uv run python scripts/registry.py build` to regenerate the index
 
 The README and the tests are not optional: `scripts/registry.py` refuses to build an
 index for a kit missing either.
@@ -102,7 +110,14 @@ optional:
   `messaging`, `presence`, `agents`, `voice` or `tooling`. A provider has no area: it
   implements a contract and is listed under Providers, one kit per vendor with a part
   per capability. Neither field is published to the index.
-- **tags**, **authors**: metadata only.
+- **defines**, **contract_topic**: the wire contract the kit owns (`chat@1`), and the
+  topic class the UI kits' `contract.ts` is generated from.
+- **implements**: contracts the kit speaks without owning them, as a provider does.
+- **parts**: pieces of one kit a user can install alone (`--only stt`), each with its
+  `include` files and the `requires`, `dependencies` and `implements` only it needs.
+  Parts are subtractive: everything a part lists is also on the kit, so a copit that
+  predates parts installs the whole kit. `registry.py check` enforces it.
+- **tags**: keywords, shown on the kit page. **authors**: metadata only.
 - **requires**: other kits in this registry, resolved transitively at install time and
   checked for cycles. This applies to every install, so only list what the kit itself
   imports.
@@ -143,6 +158,21 @@ framework-specific implementation (as `django-message-store` is for `room-chat`)
 shape that works: the portable kit keeps the wire contract, and the restricted one is an
 implementation of its store protocol.
 
+## Provider kits
+
+A provider plugs a vendor into a contract (`transcriber@1`, `synthesizer@1`, `ag-ui@1`).
+
+- One kit per vendor, with a part per capability (`stt`, `tts`). A new capability is a
+  new part, not a new kit.
+- Subclass the contract's topic and run its shared suite against it (`TranscriberContract`
+  and friends); see [writing a provider](kits/audio_stream_in/README.md#writing-a-provider).
+- Tests never call the vendor: fake its server, as `kits/deepgram/tests/fake_listen.py`
+  does.
+- Read the API key when it is used, never at import: an `api_key` class attribute with a
+  `key()` falling back to the environment variable.
+- `uv run python scripts/live_check.py <provider>` round-trips it live with the key from
+  `.env`, for a few cents. Run it whenever you change a provider.
+
 ## Before you open a PR
 
 Run the hooks, both backends, the type checker and the registry checks. CI runs the same
@@ -156,6 +186,7 @@ CHANX_KIT_BACKEND=channels      uv run pytest kits tests
 
 uv run pyright
 uv run python scripts/registry.py check
+uv run python scripts/recipes.py check    # recipes and every `copit add` in the docs
 uv run mkdocs build --strict
 ```
 
@@ -173,10 +204,13 @@ CHANX_KIT_BACKEND=channels uv run --no-default-groups \
 uv run python scripts/conformance.py    # install every kit with copit and import it
 ```
 
-Conformance needs copit 0.6 or newer, which `uv sync` installs. To check against a local
+Conformance needs copit 0.9.1 or newer for its parts check, which `uv sync` installs. To check against a local
 copit build instead:
 `COPIT=../copit/target/release/copit uv run python scripts/conformance.py`. Or run the
 whole matrix with `tox`.
+
+Voice changes are worth one browser run: `scripts/sandbox_voice_e2e.mjs` drives the
+sandbox's voice demos with Chrome's fake microphone (see its header for how to run it).
 
 A weekly job re-resolves every dependency to its newest version and runs the suite
 against it. Kits are copied, so upstream breakage reaches users through *their* next
@@ -191,11 +225,8 @@ the `react` variant, and styles are one CSS file driven by `--chanx-*` variables
 
 A UI kit may build on others: list them in `requires` and import their cores relatively
 (`../transcriber/core`), never through an alias. A kit that only combines others, like
-`voice-agent`, declares no `consumes`; its contracts come from the kits it requires.
-
-A new feature gets a line in `docs/recipes.yaml` and the README's feature table: the
-one command that installs its server and UI halves. `scripts/recipes.py check` (in CI)
-verifies each recipe, and every `copit add` in the docs, against both registries.
+`voice-agent`, declares no `consumes`; its contracts come from the kits it requires. Its
+`kit.yaml` also takes a `role` and an `area`, as a server kit's does.
 
 ```bash
 npm ci --prefix ui
@@ -204,9 +235,9 @@ npm --prefix ui test
 uv run --extra fastapi --group dev-fastapi python scripts/contracts.py check
 ```
 
-The sandbox installs every UI kit through copit, and a test fails when a copy drifts
-from `ui/`. Refresh the copies after a change:
-`cd sandbox/ui && copit update-all`.
+The sandbox installs every UI kit through copit, and tests fail when one is missing or
+a copy drifts from `ui/`. Add a new one with `cd sandbox/ui && copit add
+@chanx-kit-ui/<kit>`, and refresh the copies after a change with `copit update-all`.
 
 ## Commit messages
 
