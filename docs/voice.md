@@ -23,8 +23,7 @@ has them already.
 per word, so the whole path works before you sign up anywhere.
 
 ```bash
-uvx copit add @chanx-kit/fake-voice
-uvx copit add @chanx-kit-ui/transcriber @chanx-kit-ui/player
+uvx copit add @chanx-kit/fake-voice @chanx-kit-ui/transcriber @chanx-kit-ui/player
 ```
 
 Mount the topics on a consumer:
@@ -118,14 +117,16 @@ startup works:
 ### Only one side, or two providers
 
 Each provider installs both parts by default. Keep one with `--only`, which also
-leaves out the audio kit only the other part needs:
+leaves out the audio kit only the other part needs. It applies to the kits that have
+that part, so the UI kit can come in the same command:
 
 ```bash
-uvx copit add @chanx-kit/deepgram --only stt      # captions only
-uvx copit add @chanx-kit/elevenlabs --only tts    # a second command: ElevenLabs speaks
+uvx copit add @chanx-kit/deepgram @chanx-kit-ui/transcriber --only stt   # captions
+uvx copit add @chanx-kit/elevenlabs @chanx-kit-ui/player --only tts      # ElevenLabs speaks
 ```
 
-`--only` applies to every kit in the command, so give each provider its own.
+Two providers each with their own part take two commands, as above. Mixing registries
+with `--only` needs copit 0.9.1.
 
 ## 3. Talk to an agent
 

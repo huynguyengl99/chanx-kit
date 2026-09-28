@@ -232,15 +232,29 @@ def kit_page(name: str, component: dict[str, Any]) -> str:
 
 
 # --- kit pages ------------------------------------------------------------------
+def recipe_rows() -> list[str]:
+    """The feature table, from docs/recipes.yaml."""
+    rows = ["| Feature | Install |", "|---|---|"]
+    for recipe in yaml.safe_load((REPO_ROOT / "docs" / "recipes.yaml").read_text()):
+        install = f"`copit add {recipe['add']}`"
+        if providers := recipe.get("providers"):
+            install += "<br>Other providers: " + ", ".join(f"`{p}`" for p in providers)
+        rows.append(f"| **{recipe['title']}**<br>{recipe['what']} | {install} |")
+    return rows
+
+
 index_rows = [
     "# Kits",
     "",
-    "Each kit is copied into your project and owned by you. Install one with"
-    " [copit](https://github.com/huynguyengl99/copit):",
+    "Each kit is copied into your project and owned by you. Install with"
+    " [copit](https://github.com/huynguyengl99/copit), server and"
+    " [UI](../ui-kits.md) halves in one command.",
     "",
-    "```bash",
-    "copit add @chanx-kit/notification",
-    "```",
+    "## By feature",
+    "",
+    *recipe_rows(),
+    "",
+    "## All kits",
     "",
     "| Kit | Tier | Runs on | Description |",
     "|---|---|---|---|",
@@ -318,6 +332,8 @@ ui_index = [
     "  --index ui/copit-registry.json --to web/src/chanx-kit --variant react",
     "copit add @chanx-kit/notification @chanx-kit-ui/notification",
     "```",
+    "",
+    "[Kits by feature](../kits/index.md#by-feature) pairs each with its server kit.",
     "",
     "| UI kit | Contract | Description |",
     "|---|---|---|",

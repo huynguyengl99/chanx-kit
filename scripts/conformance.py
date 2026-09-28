@@ -250,10 +250,12 @@ def check_restricted_kits_are_refused(
 
 
 def check_parts(copit: str) -> list[str]:
-    """``--only stt`` installs one part that imports, without the other's base kit."""
-    help_text = run([copit, "add", "--help"], REPO_ROOT).stdout
-    if "--only" not in help_text:
-        print("  skipped the parts check: this copit predates parts")
+    """``--only stt`` keeps one part and its base kit, and a UI kit alongside whole."""
+    version = run([copit, "--version"], REPO_ROOT).stdout.split()[-1]
+    if tuple(int(n) for n in version.split(".")[:3]) < (0, 9, 1):
+        print(
+            f"  skipped the parts check: copit {version} predates parts across registries"
+        )
         return []
 
     with tempfile.TemporaryDirectory(prefix="chanx-kit-parts-") as scratch:
@@ -264,8 +266,22 @@ def check_parts(copit: str) -> list[str]:
             [copit, "registry", "add", "chanx-kit", str(REPO_ROOT), "--to", TARGET],
             [
                 copit,
+                "registry",
+                "add",
+                "chanx-kit-ui",
+                str(REPO_ROOT),
+                "--index",
+                "ui/copit-registry.json",
+                "--to",
+                "web/src/chanx-kit",
+                "--variant",
+                "react",
+            ],
+            [
+                copit,
                 "add",
                 "@chanx-kit/deepgram",
+                "@chanx-kit-ui/transcriber",
                 "--only",
                 "stt",
                 "-y",
@@ -286,6 +302,8 @@ def check_parts(copit: str) -> list[str]:
             problems.append(
                 "--only stt installed audio-stream-out, which only tts needs"
             )
+        if not (project / "web/src/chanx-kit/transcriber/react").is_dir():
+            problems.append("--only stt did not install the transcriber UI kit whole")
         probe = "import sys; sys.path.insert(0, '.'); import app.ws_kits.deepgram.transcriber"
         result = run([sys.executable, "-c", probe], project)
         if result.returncode != 0:

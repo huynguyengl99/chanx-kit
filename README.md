@@ -35,7 +35,8 @@ uvx copit add @chanx-kit/notification
   them work side by side, and each one still works alone.
 - **UI kits too.** The browser half, React first, installed the same way. Each binds to
   the messages a kit speaks rather than to one server kit, so one UI works with every
-  provider.
+  provider. They compose like server kits: hooks on one channel share one socket, and
+  the voice agent UI is the transcriber, player and AG-UI kits put together.
 
 Use cases:
 
@@ -109,20 +110,28 @@ From here, the
 [getting started guide](https://huynguyengl99.github.io/chanx-kit/getting-started/)
 covers subscribing from a client, composing several kits, and overriding a kit's hooks.
 
-## A few kits
+## What you can build
 
-| Kit | What it does |
+One command per feature, server and browser halves together. Set up the UI registry
+once as well ([UI kits](https://huynguyengl99.github.io/chanx-kit/ui-kits/)).
+
+| Feature | Install |
 |---|---|
-| [`notification`](kits/notification) | Fan out notifications to a user's live connections, from a signal, a worker, or another service |
-| [`room_chat`](kits/room_chat) | A chat room: history replayed on connect, plus a live roster. Pluggable store |
-| [`ag_ui`](kits/ag_ui) | Serve the AG-UI protocol over a websocket, so any AG-UI frontend works unchanged. Provider-agnostic |
-| [`pydantic_ai_ag_ui`](kits/pydantic_ai_ag_ui) | Run a Pydantic AI agent over AG-UI, approvals included, with the conversation kept server-side |
-| [`deepgram`](kits/deepgram) | Speech to text and text to speech with Deepgram; ElevenLabs and OpenAI kits work the same way |
-| [`voice_agent`](kits/voice_agent) | Talk to any AG-UI agent: spoken replies as they stream, interrupted by speaking |
+| Notifications | `copit add @chanx-kit/notification @chanx-kit-ui/notification` |
+| Chat room with a roster | `copit add @chanx-kit/room-chat @chanx-kit-ui/chat` |
+| Presence | `copit add @chanx-kit/presence @chanx-kit-ui/presence` |
+| AI agent over AG-UI | `copit add @chanx-kit/pydantic-ai-ag-ui @chanx-kit-ui/ag-ui` |
+| Live captions | `copit add @chanx-kit/deepgram @chanx-kit-ui/transcriber --only stt` |
+| Text to speech | `copit add @chanx-kit/elevenlabs @chanx-kit-ui/player --only tts` |
+| Voice agent | `copit add @chanx-kit/voice-agent @chanx-kit/deepgram @chanx-kit-ui/voice-agent` |
 
-Presence, a conversation store, a Redis-backed roster, a Django-backed message store and
-the test harness are kits too, and so is the browser side in [ui/](ui). See [kits/](kits)
-in this repository, or
+Server kits work without the UI ones, and the other way round: a UI kit binds to the
+messages a server kit speaks, so any provider (`deepgram`, `elevenlabs`, `openai` or the
+keyless `fake-voice`) fits the same UI. Mixing registries with `--only` needs copit
+0.9.1 or later.
+
+Stores, a Redis-backed roster, a Django-backed message store and the test harness are
+kits too. See [kits/](kits) and [ui/](ui) in this repository, or
 **[browse them all](https://huynguyengl99.github.io/chanx-kit/kits/)** with their
 messages, hooks and caveats.
 

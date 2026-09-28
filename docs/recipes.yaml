@@ -1,0 +1,26 @@
+# One command per feature, both halves. Checked by scripts/recipes.py; the docs render it
+# and the README must list every command.
+- title: Notifications
+  what: Push to a user's open tabs from a signal, a worker or another service
+  add: "@chanx-kit/notification @chanx-kit-ui/notification"
+- title: Chat room
+  what: History replayed on join, a composer and who is here
+  add: "@chanx-kit/room-chat @chanx-kit-ui/chat"
+- title: Presence
+  what: Who is in a room, document or tenant
+  add: "@chanx-kit/presence @chanx-kit-ui/presence"
+- title: AI agent
+  what: A Pydantic AI agent streaming over AG-UI, approvals included
+  add: "@chanx-kit/pydantic-ai-ag-ui @chanx-kit-ui/ag-ui"
+- title: Live captions
+  what: Microphone to text while you speak
+  add: "@chanx-kit/deepgram @chanx-kit-ui/transcriber --only stt"
+  providers: [elevenlabs, openai, fake-voice]
+- title: Text to speech
+  what: Text spoken to every listener
+  add: "@chanx-kit/elevenlabs @chanx-kit-ui/player --only tts"
+  providers: [deepgram, openai, fake-voice]
+- title: Voice agent
+  what: Talk to an AG-UI agent, hear it answer, interrupt it by speaking
+  add: "@chanx-kit/voice-agent @chanx-kit/deepgram @chanx-kit-ui/voice-agent"
+  providers: [elevenlabs, openai, fake-voice]
