@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { NotificationFeed, useNotifications } from '@/chanx-kit/notification';
+import { NotificationFeed, useNotifications } from '@/chanx-kit/notification/react';
+import '@/chanx-kit/notification/notification.css';
 import { notifications } from '@/generated';
 
 const everyone = notifications.topics.broadcastNotificationTopic.with();

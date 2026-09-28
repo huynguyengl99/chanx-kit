@@ -38,21 +38,25 @@ REDIS_URL=redis://localhost:6399/0 uv run python -m app.notify "Build finished"
 | `app/main.py` | Routes, including `POST /api/notify` |
 | `app/ws_kits/` | Kits copied by copit, yours to edit |
 | `web/src/generated/` | Typed client, from `npm --prefix web run gen` |
-| `web/src/chanx-kit/` | Kit UI: hooks and components |
+| `web/src/chanx-kit/` | UI kits copied by copit: a core, React hooks and components, CSS |
 | `copit.toml` | Kit sources, for `copit update` |
 
 ## Add a kit
 
+Both registries are set up in `copit.toml`, so one command adds the server and browser
+halves:
+
 ```bash
-uvx copit add @chanx-kit/room-chat
+uvx copit add @chanx-kit/room-chat @chanx-kit-ui/chat
 ```
 
 1. List its topics on a consumer in `app/consumers.py`.
 2. `npm --prefix web run gen`.
-3. Use the new topics from `@/generated` with `useTopic` / `useTopics` from
-   `@chanx-js/client/react`.
+3. Pass the channel and topic from `@/generated` to the UI kit's hook, as `App.tsx` does
+   with `useNotifications`.
 
-Kits: https://huynguyengl99.github.io/chanx-kit/kits/
+Kits by feature, with the command for each:
+https://huynguyengl99.github.io/chanx-kit/kits/#by-feature
 
 ## Auth
 

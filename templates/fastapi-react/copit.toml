@@ -1,16 +1,32 @@
 target = "vendor"
 
 [registries.chanx-kit]
-source = "github:huynguyengl99/chanx-kit@v0.3.1"
+source = "github:huynguyengl99/chanx-kit@v0.4.0"
 target = "app/ws_kits"
 variants = ["fastapi"]
 
+[registries.chanx-kit-ui]
+source = "github:huynguyengl99/chanx-kit@v0.4.0"
+index = "ui/copit-registry.json"
+target = "web/src/chanx-kit"
+variants = ["react"]
+
 [[sources]]
 path = "app/ws_kits/notification"
-source = "github:huynguyengl99/chanx-kit@v0.3.1/kits/notification"
-ref = "v0.3.1"
-commit = "0e0d46b486534912b1aaf9508f79b4d074132365"
-copied_at = "2026-09-26T14:46:57Z"
+source = "github:huynguyengl99/chanx-kit@v0.4.0/kits/notification"
+ref = "v0.4.0"
+commit = "7f08fc9746f1408c80b15169da5c62469484f66e"
+copied_at = "2026-09-28T12:12:38Z"
 component = "chanx-kit:notification"
 component_version = "0.1.0"
 variants = ["fastapi"]
+
+[[sources]]
+path = "web/src/chanx-kit/notification"
+source = "github:huynguyengl99/chanx-kit@v0.4.0/ui/notification"
+ref = "v0.4.0"
+commit = "7f08fc9746f1408c80b15169da5c62469484f66e"
+copied_at = "2026-09-28T12:12:32Z"
+component = "chanx-kit-ui:notification"
+component_version = "0.1.0"
+variants = ["react"]
