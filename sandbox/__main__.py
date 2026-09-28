@@ -6,17 +6,21 @@ Serves the FastAPI app with every kit mounted, plus the built demo UI if there i
     REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox
 
 Set REDIS_URL to broadcast across processes; the in-memory default cannot leave this
-one. See sandbox/README.md for the UI dev server.
+one. Provider keys are read from the environment or the git-ignored ``.env``. See
+sandbox/README.md for the UI dev server.
 """
 
 import argparse
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 UI_DIST = Path(__file__).parent / "ui" / "dist"
 
 
 def main() -> int:
+    load_dotenv(Path(__file__).parent.parent / ".env")
     parser = argparse.ArgumentParser(prog="sandbox", description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
@@ -36,6 +40,10 @@ def main() -> int:
             if os.environ.get("REDIS_URL")
             else "in-memory (single process; set REDIS_URL to share)"
         ),
+        "  speech to text      "
+        + ("deepgram" if os.environ.get("DEEPGRAM_API_KEY") else "fake"),
+        "  text to speech      "
+        + ("elevenlabs" if os.environ.get("ELEVENLABS_API_KEY") else "fake"),
         "  demo UI             "
         + (
             "built"

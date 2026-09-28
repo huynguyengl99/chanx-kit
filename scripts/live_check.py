@@ -14,6 +14,8 @@ import wave
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
@@ -114,18 +116,8 @@ async def check(provider: str, out: Path) -> bool:
     return ok
 
 
-def load_dotenv(path: Path = REPO_ROOT / ".env") -> None:
-    """KEY=value lines from a git-ignored .env; the environment wins."""
-    if not path.exists():
-        return
-    for line in path.read_text().splitlines():
-        key, sep, value = line.partition("=")
-        if sep and not key.startswith("#"):
-            os.environ.setdefault(key.strip(), value.strip().strip("'\""))
-
-
 def main() -> int:
-    load_dotenv()
+    load_dotenv(REPO_ROOT / ".env")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("provider", choices=sorted(PROVIDERS))
     parser.add_argument("--out", type=Path, default=Path("live-check.wav"))

@@ -464,6 +464,7 @@ dev-fastapi = [
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
+    { name = "python-dotenv" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 docs = [
@@ -548,6 +549,7 @@ dev-fastapi = [
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-cov", specifier = ">=6.1.1,<7" },
     { name = "pytest-mock", specifier = ">=3.14.0,<4" },
+    { name = "python-dotenv", specifier = ">=1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.35.0" },
 ]
 docs = [

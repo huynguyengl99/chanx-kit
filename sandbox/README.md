@@ -18,6 +18,10 @@ npm --prefix sandbox/ui install && npm --prefix sandbox/ui run build
 uv run python -m sandbox
 ```
 
+Voice panels use Deepgram and ElevenLabs when `DEEPGRAM_API_KEY` / `ELEVENLABS_API_KEY`
+are set, in the environment or a git-ignored `.env` at the repo root, and the fake
+provider otherwise. The startup banner says which.
+
 Open **http://localhost:8000** for one panel per kit, and
 **http://localhost:8000/asyncapi** for the generated WebSocket API docs. The startup
 banner tells you which channel layer is active and whether the UI has been built.
@@ -36,6 +40,8 @@ npm --prefix sandbox/ui run dev   # terminal 2, http://localhost:5173
 | `/ws/notifications` | `NotificationConsumer` | notification |
 | `/ws/rooms/{room}` | `RoomConsumer` | room-chat, presence |
 | `/ws/agent` | `AgentConsumer` | ag-ui |
+| `/ws/voice` | `VoiceConsumer` | audio-stream-in, audio-stream-out |
+| `/ws/assistant` | `AssistantConsumer` | voice-agent |
 
 Open a second tab on the Room panel to watch history replay and the roster update live.
 
