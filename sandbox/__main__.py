@@ -3,10 +3,9 @@
 Serves the FastAPI app with every kit mounted, plus the built demo UI if there is one.
 
     uv run python -m sandbox                 # http://localhost:8000
-    REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox
 
-Set REDIS_URL to broadcast across processes; the in-memory default cannot leave this
-one. Provider keys are read from the environment or the git-ignored ``.env``. See
+REDIS_URL and provider keys come from the environment or the git-ignored ``.env`` (see
+``.env.example``). Without REDIS_URL the in-memory layer cannot leave this process. See
 sandbox/README.md for the UI dev server.
 """
 
@@ -14,13 +13,13 @@ import argparse
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from sandbox.env import load_env
 
 UI_DIST = Path(__file__).parent / "ui" / "dist"
 
 
 def main() -> int:
-    load_dotenv(Path(__file__).parent.parent / ".env")
+    load_env()
     parser = argparse.ArgumentParser(prog="sandbox", description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)

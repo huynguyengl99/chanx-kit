@@ -50,19 +50,21 @@ Open the chat room in a second tab to watch history replay and the roster update
 ## Across processes
 
 The default channel layer is in-memory, so it cannot leave the process. To see a worker
-reach the browser, give both sides the same Redis:
+reach the browser, give both sides the same Redis. Every sandbox command reads `.env`,
+so set `REDIS_URL` there once:
 
 ```bash
 docker compose up -d
-REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox
-REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox.send_notification "Build finished"
+cp .env.example .env        # or add its REDIS_URL line to your .env
+uv run python -m sandbox    # the banner says "channel layer  redis (...)"
+uv run python -m sandbox.send_notification "Build finished"
 ```
 
 That reaches every open tab, on `notification:all`. To address one audience instead, and
 watch the server refuse a client that asks for someone else's:
 
 ```bash
-REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox.send_notification --user demo "Just for you"
+uv run python -m sandbox.send_notification --user chris "Just for you"
 ```
 
 `send_notification.py` is the shape of a Django signal or a Celery task: no WebSocket and
@@ -70,7 +72,7 @@ no consumer, just a topic. `worker.py` is the same idea for an agent run: start 
 UI, then feed tool calls and streamed text into it from another process.
 
 ```bash
-REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox.worker <run-id>
+uv run python -m sandbox.worker <run-id>
 ```
 
 Both publish through the same topic classes `consumers.py` mounts, and that matters:

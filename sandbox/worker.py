@@ -1,9 +1,9 @@
 """Drive an agent run from a background worker.
 
-    # terminal 1
-    REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox
+    # REDIS_URL in .env (see .env.example), then terminal 1:
+    uv run python -m sandbox
     # terminal 2: connect a client to /ws/agent, subscribe to agui:run:<run-id>, then:
-    REDIS_URL=redis://localhost:6399/0 uv run python -m sandbox.worker <run-id>
+    uv run python -m sandbox.worker <run-id>
 
 The shape a task queue or a tool runner would take: the work does not own the
 WebSocket, and whichever process does forwards what this publishes.
@@ -29,6 +29,7 @@ from ag_ui.core import (
     ToolCallEndEvent,
     ToolCallStartEvent,
 )
+from sandbox.env import load_env
 from sandbox.layers import setup_layers
 
 STEPS = [
@@ -86,12 +87,14 @@ async def stream_an_answer(run_id: str) -> None:
 
 
 async def main() -> None:
+    load_env()
     if not os.environ.get("REDIS_URL"):
         raise SystemExit(
             "REDIS_URL is not set. The sandbox falls back to an in-memory channel "
             "layer, which cannot cross process boundaries, so this worker would emit "
             "into its own layer and nothing would reach the browser.\n"
-            "Start the server and this worker with the same REDIS_URL."
+            "Run `docker compose up -d`, set REDIS_URL in .env (see .env.example), "
+            "and restart the server so both use it."
         )
 
     arguments = sys.argv[1:]

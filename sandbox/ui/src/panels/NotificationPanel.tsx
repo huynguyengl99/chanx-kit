@@ -24,8 +24,9 @@ export function NotificationPanel({ who }: { who: string }) {
       />
       <p className="hint">
         Nothing in the browser sends these, that is the point. Trigger one from a
-        separate process (needs <code>REDIS_URL</code>, since an in-memory layer cannot
-        cross processes):
+        separate process. Both need Redis: <code>docker compose up -d</code> and{' '}
+        <code>REDIS_URL</code> in <code>.env</code> (see <code>.env.example</code>), since
+        an in-memory layer cannot cross processes:
         <br />
         <code>python -m sandbox.send_notification "Build finished"</code>
         <br />
