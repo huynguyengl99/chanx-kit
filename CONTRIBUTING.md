@@ -182,6 +182,14 @@ UI kits live in `ui/`, a second copit registry (`ui/registry.yaml`, published as
 generated, `core.ts` is framework-free and tested with vitest, `react/` ships only with
 the `react` variant, and styles are one CSS file driven by `--chanx-*` variables.
 
+A UI kit may build on others: list them in `requires` and import their cores relatively
+(`../transcriber/core`), never through an alias. A kit that only combines others, like
+`voice-agent`, declares no `consumes`; its contracts come from the kits it requires.
+
+A new feature gets a line in `docs/recipes.yaml` and the README's feature table: the
+one command that installs its server and UI halves. `scripts/recipes.py check` (in CI)
+verifies each recipe, and every `copit add` in the docs, against both registries.
+
 ```bash
 npm ci --prefix ui
 npm --prefix ui run typecheck

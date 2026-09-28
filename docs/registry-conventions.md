@@ -169,6 +169,10 @@ as `ui/copit-registry.json` with `ecosystem: node`. The framework is a copit var
 files under `react/` ship only with `react`, while `contract.ts`, `core.ts` and the CSS
 ship always, so the framework-free core never imports React (a test enforces it).
 
+UI kits `require` each other like server kits (`chat` brings `presence`, `voice-agent`
+brings `transcriber`, `player` and `ag-ui`) and import each other by relative path, so
+they work wherever `--to` puts them.
+
 The docs site also publishes the UI kits as a shadcn registry, generated from the same
 index by `scripts/shadcn.py`.
 

@@ -40,7 +40,7 @@ install footprint that is exactly what you used.
     ---
 
     Stack as many kits into one consumer as you like, with no type errors and no
-    `# pyright: ignore`.
+    `# pyright: ignore`. In the browser, their UI kits share one socket.
 
 </div>
 
@@ -77,6 +77,12 @@ await UserNotificationTopic.notify_user(
     user.id, NotificationPayload(title="Build finished")
 )
 ```
+
+## UI kits
+
+The browser half, React first, over a framework-free core. Each binds to a contract,
+so the transcriber UI works with Deepgram, ElevenLabs or OpenAI alike, and kits build on
+each other. [UI kits](ui-kits.md).
 
 ## Voice, too
 

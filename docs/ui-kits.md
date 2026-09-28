@@ -24,6 +24,8 @@ add `--variant react`. Then install kits, usually alongside their server kit:
 uvx copit add @chanx-kit/notification @chanx-kit-ui/notification
 ```
 
+[Kits by feature](kits/index.md#by-feature) has the command for each feature.
+
 `@chanx-js/client` is installed for you. Kits import each other relatively, so they
 work wherever `--to` puts them.
 
@@ -57,6 +59,58 @@ export function Inbox({ userId }: { userId: string }) {
 
 A topic that does not speak the kit's contract is a type error. One that sends extra
 messages of its own is fine.
+
+## Compose them
+
+UI kits compose the way server kits do: side by side on one socket, and built from each
+other.
+
+**Several kits, one socket.** Hooks on the same channel share one WebSocket, opened by
+the first and closed with the last. A room page is a chat log and a roster over one
+connection, matching one consumer on the server:
+
+```tsx
+const options = { params: { room: 'general' } };  // same options, same socket
+const chat = useChat(rooms, rooms.topics.roomChatTopic.with({ room: 'general' }), options);
+const people = usePresence(rooms, rooms.topics.presenceTopic.with({ scope: 'general' }), options);
+```
+
+Two components on the same topic subscribe once; the subscription ends when the last
+one unmounts.
+
+**Kits built from kits.** A kit's `requires` comes with it, and it imports the kit
+relatively, so the copies stay yours to edit:
+
+| UI kit | Speaks | Brings |
+|---|---|---|
+| `notification` | `notification@1` | |
+| `presence` | `presence@1` | |
+| `chat` | `chat@1` | `presence` |
+| `ag-ui` | `ag-ui@1` | |
+| `audio` | | |
+| `transcriber` | `transcriber@1` | `audio` |
+| `player` | `synthesizer@1` | `audio` |
+| `voice-agent` | `transcriber@1`, `synthesizer@1`, `ag-ui@1` | `transcriber`, `player`, `ag-ui` |
+
+**One session across contracts.** `voice-agent` speaks no contract of its own: it
+binds the transcriber, player and ag-ui cores to three topics of one session and adds
+what only the combination knows, such as silencing playback when the user talks over
+it. Your own composite is the same shape, a `connect*` function over other kits'
+cores:
+
+```ts
+import { connectTranscriber } from '../transcriber/core';
+import { connectAgentThread } from '../ag-ui/core';
+
+export function connectDictation(client, channel, topics) {
+  const ears = connectTranscriber(client, channel, topics.transcriber);
+  const thread = connectAgentThread(client, channel, topics.thread);
+  ears.transcript.subscribe(() => {
+    // Run the agent on each finished line.
+  });
+  return { ears, thread, start: () => { ears.start(); thread.start(); } };
+}
+```
 
 ## Without React
 
