@@ -5,6 +5,8 @@ description: >-
   the notification contract.
 version: 0.1.0
 tier: core
+role: feature
+area: messaging
 tags: [notification, feed]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

@@ -5,6 +5,8 @@ description: >-
   endpoint. Drop-in replacement for the room-chat kit's in-memory default.
 version: 0.1.0
 tier: contrib
+role: store
+area: messaging
 tags: [chat, django, orm, persistence, rest]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

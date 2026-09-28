@@ -4,6 +4,7 @@ description: >-
   OpenAI behind the voice contracts: realtime transcription and text-to-speech. Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.
 version: 0.1.0
 tier: contrib
+role: provider
 tags: [audio, speech-to-text, text-to-speech, openai, provider]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

@@ -72,6 +72,8 @@ description: >-
   presence kit. Pluggable store.
 version: 0.1.0
 tier: core
+role: feature
+area: messaging
 tags: [chat, rooms, history, persistence]
 authors: ["Your Name <you@example.com>"]
 
@@ -95,6 +97,11 @@ optional:
   change the kit; it is how a user can tell what they copied.
 - **tier**: `core` or `contrib`, defaulting to `contrib`. A `core` kit may only require
   other `core` kits, which is what keeps the maintained core self-contained.
+- **role**, **area**: where the docs file the kit. `role` is `feature`, `store`,
+  `foundation` (installed for you by other kits), `tooling` or `provider`. `area` is
+  `messaging`, `presence`, `agents`, `voice` or `tooling`. A provider has no area: it
+  implements a contract and is listed under Providers, one kit per vendor with a part
+  per capability. Neither field is published to the index.
 - **tags**, **authors**: metadata only.
 - **requires**: other kits in this registry, resolved transitively at install time and
   checked for cycles. This applies to every install, so only list what the kit itself

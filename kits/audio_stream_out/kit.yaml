@@ -7,6 +7,8 @@ description: >-
   was actually heard.
 version: 0.1.0
 tier: core
+role: foundation
+area: voice
 tags: [audio, text-to-speech, synthesis, streaming]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

@@ -6,6 +6,8 @@ description: >-
   tests.
 version: 0.1.0
 tier: core
+role: foundation
+area: agents
 tags: [agent, persistence, history, storage]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

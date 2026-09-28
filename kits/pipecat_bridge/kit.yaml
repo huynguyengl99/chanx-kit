@@ -6,6 +6,7 @@ description: >-
   Pipecat never sees a transport.
 version: 0.1.0
 tier: contrib
+role: provider
 tags: [audio, speech-to-text, pipecat, bridge]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

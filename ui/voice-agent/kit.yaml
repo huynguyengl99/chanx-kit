@@ -6,6 +6,8 @@ description: >-
   one session.
 version: 0.1.0
 tier: core
+role: feature
+area: voice
 tags: [voice, agent, ag-ui, barge-in]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

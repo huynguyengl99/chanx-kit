@@ -4,6 +4,7 @@ description: >-
   Deepgram behind the voice contracts: live speech-to-text (Nova) and streaming text-to-speech (Aura). Install both, or one part with `--only stt` or `--only tts`. The API key stays on the server.
 version: 0.1.0
 tier: contrib
+role: provider
 tags: [audio, speech-to-text, text-to-speech, deepgram, provider]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

@@ -5,6 +5,8 @@ description: >-
   workers. Drop-in replacement for the presence kit's in-memory default.
 version: 0.1.0
 tier: contrib
+role: store
+area: presence
 tags: [presence, redis, scaling]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

@@ -6,6 +6,8 @@ description: >-
   stream. Bounded streams, per-user limits, gap detection and watcher fan-out.
 version: 0.1.0
 tier: core
+role: foundation
+area: voice
 tags: [audio, speech-to-text, transcription, streaming]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 

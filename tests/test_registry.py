@@ -408,3 +408,26 @@ def test_a_part_listing_what_its_kit_lacks_is_a_problem() -> None:
         "kit: part 'x' lists requires ['b'] the kit does not; "
         "a copit without parts would install the kit without them"
     ]
+
+
+@pytest.mark.parametrize(
+    ("data", "problems"),
+    [
+        ({"role": "feature", "area": "voice"}, []),
+        ({"role": "provider", "implements": ["transcriber@1"]}, []),
+        ({"area": "voice"}, ["role must be one of"]),
+        ({"role": "feature"}, ["area must be one of"]),
+        ({"role": "provider"}, ["a provider implements no contract"]),
+        (
+            {"role": "provider", "implements": ["x@1"], "area": "voice"},
+            ["a provider has no area"],
+        ),
+    ],
+)
+def test_every_kit_is_filed_for_the_docs(
+    data: dict[str, Any], problems: list[str]
+) -> None:
+    found = registry_module.catalog_problems(data)
+
+    assert len(found) == len(problems)
+    assert all(f.startswith(p) for f, p in zip(found, problems, strict=True))

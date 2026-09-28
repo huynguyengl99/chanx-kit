@@ -177,6 +177,34 @@ def expand_variants(variants: dict[str, Any], files: list[str]) -> dict[str, Any
     return expanded
 
 
+# Where the docs file a kit; kit.yaml only, never published.
+ROLES = ("feature", "provider", "store", "foundation", "tooling")
+AREAS = ("messaging", "presence", "agents", "voice", "tooling")
+
+
+def catalog_problems(data: dict[str, Any]) -> list[str]:
+    """A ``role``, plus an ``area`` for all but providers, which must implement a contract."""
+    role, area = data.get("role"), data.get("area")
+    match role:
+        case "provider":
+            problems = (
+                [] if data.get("implements") else ["a provider implements no contract"]
+            )
+            if area:
+                problems.append(
+                    "a provider has no area; the docs list it under Providers"
+                )
+            return problems
+        case str() if role in ROLES:
+            return (
+                []
+                if area in AREAS
+                else [f"area must be one of {list(AREAS)}, not {area!r}"]
+            )
+        case _:
+            return [f"role must be one of {list(ROLES)}, not {role!r}"]
+
+
 def build_parts(
     name: str, data: dict[str, Any], files: list[str], group_files: dict[str, list[str]]
 ) -> tuple[dict[str, Any], list[Problem]]:
@@ -292,6 +320,7 @@ def build(layout: Layout = SERVER) -> tuple[Registry, list[Problem]]:
         variants = expand_variants(variants, files)
         parts, part_problems = build_parts(name, data, files, group_files)
         problems.extend(part_problems)
+        problems.extend(Problem(name, p) for p in catalog_problems(data))
         registry.contracts[name] = {
             key: data[key]
             for key in ("defines", "contract_topic", "implements", "consumes")

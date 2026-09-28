@@ -6,6 +6,7 @@ description: >-
   server-side and replayed to a reconnecting client as MESSAGES_SNAPSHOT.
 version: 0.2.1
 tier: contrib
+role: provider
 tags: [agent, ag-ui, pydantic-ai, streaming, approvals]
 authors: ["Huy Nguyen <ndhgl99@gmail.com>"]
 
