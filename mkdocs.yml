@@ -44,6 +44,7 @@ theme:
 
 plugins:
   - search
+  - tags
   # Kit pages and the API reference are generated at build time from copit-registry.json,
   # each kit's README and the frozen contracts, so docs cannot drift from the code.
   - gen-files:
@@ -71,6 +72,11 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+
+extra_css:
+  - stylesheets/kits.css
+extra_javascript:
+  - javascripts/kit-filter.js
 
 extra:
   social:

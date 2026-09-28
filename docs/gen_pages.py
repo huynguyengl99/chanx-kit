@@ -45,6 +45,109 @@ for _name, _component in UI_COMPONENTS.items():
         UIS_OF.setdefault(_contract, []).append(_name)
 
 
+AREAS = {
+    "messaging": "Messaging",
+    "presence": "Presence",
+    "agents": "Agents",
+    "voice": "Voice",
+    "tooling": "Tooling",
+}
+ROLES = {
+    "feature": "Feature",
+    "store": "Store",
+    "foundation": "Foundation",
+    "tooling": "Tooling",
+    "provider": "Provider",
+}
+# Matrix columns on the Providers page; other contracts follow by name.
+CAPABILITIES = {
+    "transcriber@1": "Speech to text",
+    "synthesizer@1": "Text to speech",
+    "ag-ui@1": "Agent",
+}
+
+
+def required_by(components: dict[str, Any]) -> dict[str, list[str]]:
+    found: dict[str, list[str]] = {}
+    for name, component in components.items():
+        for required in component.get("requires") or []:
+            found.setdefault(required, []).append(name)
+    return found
+
+
+# Per registry: both have an ag-ui and a presence.
+SERVER_REQUIRED_BY = required_by(COMPONENTS)
+UI_REQUIRED_BY = required_by(UI_COMPONENTS)
+DEFINED_IN = {
+    meta["defines"]: name
+    for name, meta in ((n, manifest(c)) for n, c in COMPONENTS.items())
+    if meta.get("defines")
+}
+
+
+def areas_of(component: dict[str, Any]) -> list[str]:
+    """A kit's area; a provider's are those of the contracts it implements."""
+    meta = manifest(component)
+    if area := meta.get("area"):
+        return [area]
+    found = [
+        manifest(COMPONENTS[DEFINED_IN[c]]).get("area")
+        for c in meta.get("implements") or []
+        if c in DEFINED_IN
+    ]
+    return sorted({a for a in found if a}, key=list(AREAS).index)
+
+
+def page_tags(component: dict[str, Any], *, ui: bool) -> str:
+    """Front matter for Material's tags plugin: area, role, side and contracts."""
+    meta = manifest(component)
+    tags = [
+        *(AREAS[a] for a in areas_of(component)),
+        ROLES[meta["role"]],
+        "UI kit" if ui else "Server kit",
+        *contracts_of(component),
+    ]
+    return "---\ntags:\n" + "".join(f"  - {t}\n" for t in tags) + "---\n\n"
+
+
+def nav_groups(components: dict[str, Any], prefix: str) -> list[str]:
+    """Kits grouped by area, features first; providers are listed on their own."""
+    lines: list[str] = []
+    for area, title in AREAS.items():
+        members = [
+            name for name, c in components.items() if manifest(c).get("area") == area
+        ]
+        if not members:
+            continue
+        members.sort(
+            key=lambda n: (
+                list(ROLES).index(manifest(components[n])["role"]),
+                components[n]["title"],
+            )
+        )
+        lines.append(f"    * {title}")
+        lines += [
+            f"        * [{components[n]['title']}]({prefix}{n}.md)" for n in members
+        ]
+    return lines
+
+
+def foundation_note(
+    name: str, component: dict[str, Any], users_of: dict[str, list[str]]
+) -> list[str]:
+    """Who installs a foundation kit, and when to open it yourself."""
+    meta = manifest(component)
+    if meta["role"] != "foundation":
+        return []
+    users = link_list(sorted(users_of.get(name, [])), "")
+    use = (
+        f"Open it to write your own provider, or as the reference for `{meta['defines']}`."
+        if meta.get("defines")
+        else "Open it to build a kit on top of it."
+    )
+    return ['!!! note "Installed for you"', f"    With {users}. {use}", ""]
+
+
 def contracts_of(component: dict[str, Any]) -> list[str]:
     meta = manifest(component)
     found = [meta.get("defines"), *(meta.get("implements") or [])]
@@ -69,6 +172,9 @@ def contract_facts(component: dict[str, Any], *, ui: bool) -> list[str]:
         )
         if other.get(contract):
             rows.append(f"| **{label}** | {link_list(other[contract], prefix)} |")
+        providers = [p for p in SERVERS_OF.get(contract, []) if p != component["name"]]
+        if not ui and manifest(component).get("defines") == contract and providers:
+            rows.append(f"| **Providers** | {link_list(providers, '')} |")
     return rows
 
 
@@ -173,6 +279,7 @@ def kit_page(name: str, component: dict[str, Any]) -> str:
         f'!!! info "{tier} · v{component["version"]}"',
         f"    {component['description']}",
         "",
+        *foundation_note(name, component, SERVER_REQUIRED_BY),
     ]
 
     variant_flags = " ".join(f"--variant {variant}" for variant in only_variants)
@@ -209,13 +316,18 @@ def kit_page(name: str, component: dict[str, Any]) -> str:
         )
     if component.get("tags"):
         facts.append(
-            "| **Tags** | " + ", ".join(f"`{t}`" for t in component["tags"]) + " |"
+            "| **Keywords** | " + ", ".join(f"`{t}`" for t in component["tags"]) + " |"
         )
     facts.append(
         f"| **Source** | [{component['path']}]({REPO_URL}/tree/main/{component['path']}) |"
     )
 
-    sections = ["\n".join(header), "\n".join(facts), "", rewrite_links(body)]
+    sections = [
+        page_tags(component, ui=False) + "\n".join(header),
+        "\n".join(facts),
+        "",
+        rewrite_links(body),
+    ]
 
     messages = kit_messages(Path(component["path"]).name)
     if messages:
@@ -243,6 +355,17 @@ def recipe_rows() -> list[str]:
     return rows
 
 
+def catalog_row(name: str, component: dict[str, Any], *, ui: bool) -> str:
+    link = f"../ui/{name}.md" if ui else f"{name}.md"
+    areas = ", ".join(AREAS[a] for a in areas_of(component))
+    role = ROLES[manifest(component)["role"]]
+    side = "UI" if ui else "Server"
+    return (
+        f"| [`{name}`]({link}) | {side} | {areas} | {role} "
+        f"| {component['description']} |"
+    )
+
+
 index_rows = [
     "# Kits",
     "",
@@ -254,31 +377,89 @@ index_rows = [
     "",
     *recipe_rows(),
     "",
-    "## All kits",
+    "## Catalog",
     "",
-    "| Kit | Tier | Runs on | Description |",
-    "|---|---|---|---|",
+    "Every server and UI kit. Foundations are installed for you by the kits that need"
+    " them; [providers](../providers/index.md) plug a vendor into a contract.",
+    "",
+    '<div class="kit-filter" data-side="Server,UI"'
+    f' data-area="{",".join(AREAS.values())}" data-role="{",".join(ROLES.values())}">'
+    "</div>",
+    "",
+    "| Kit | Side | Area | Role | Description |",
+    "|---|---|---|---|---|",
+    *(catalog_row(n, COMPONENTS[n], ui=False) for n in sorted(COMPONENTS)),
+    *(catalog_row(n, UI_COMPONENTS[n], ui=True) for n in sorted(UI_COMPONENTS)),
 ]
-
-for name in sorted(COMPONENTS):
-    component = COMPONENTS[name]
-    runs_on = ", ".join(component.get("only_variants") or []) or "both"
-    index_rows.append(
-        f"| [`{name}`]({name}.md) | {component['tier']} | {runs_on} "
-        f"| {component['description']} |"
-    )
 
 with mkdocs_gen_files.open("kits/index.md", "w") as handle:
     handle.write("\n".join(index_rows) + "\n")
 
-nav_lines.append("* [Kits](kits/index.md)")
 for name in sorted(COMPONENTS):
     with mkdocs_gen_files.open(f"kits/{name}.md", "w") as handle:
         handle.write(kit_page(name, COMPONENTS[name]))
     mkdocs_gen_files.set_edit_path(
         f"kits/{name}.md", f"{COMPONENTS[name]['path']}/README.md"
     )
-    nav_lines.append(f"    * [{COMPONENTS[name]['title']}](kits/{name}.md)")
+nav_lines.append("* [Kits](kits/index.md)")
+nav_lines += nav_groups(COMPONENTS, "kits/")
+
+
+# --- providers ------------------------------------------------------------------
+PROVIDERS = sorted(
+    (n for n, c in COMPONENTS.items() if manifest(c)["role"] == "provider"),
+    key=lambda n: COMPONENTS[n]["title"].lower(),
+)
+
+
+def capabilities(name: str) -> dict[str, str]:
+    """Contract to how it is installed: the part's name, or a tick for the whole kit."""
+    meta = manifest(COMPONENTS[name])
+    if parts := meta.get("parts"):
+        return {
+            c: f"`{p}`"
+            for p, spec in parts.items()
+            for c in spec.get("implements") or []
+        }
+    return dict.fromkeys(meta.get("implements") or [], "✓")
+
+
+columns = sorted(
+    {c for n in PROVIDERS for c in capabilities(n)},
+    key=lambda c: (list(CAPABILITIES).index(c) if c in CAPABILITIES else 99, c),
+)
+provider_rows = [
+    "# Providers",
+    "",
+    "A provider plugs a vendor or framework into a contract, so the UI kits and every"
+    " recipe work unchanged whichever you pick. A vendor with several capabilities is"
+    " one kit with a part each: install all, or one with `--only <part>`.",
+    "",
+    "| Provider | "
+    + " | ".join(f"{CAPABILITIES.get(c, c)} (`{c}`)" for c in columns)
+    + " | Tier |",
+    "|---|" + "---|" * len(columns) + "---|",
+]
+for name in PROVIDERS:
+    has = capabilities(name)
+    provider_rows.append(
+        f"| [{COMPONENTS[name]['title']}](../kits/{name}.md) | "
+        + " | ".join(has.get(c, "") for c in columns)
+        + f" | {COMPONENTS[name]['tier']} |"
+    )
+provider_rows += [
+    "",
+    "## Add a provider",
+    "",
+    "Subclass the contract's topic and run its shared test suite against it; see"
+    " [writing a provider](../kits/audio-stream-in.md#writing-a-provider). Providers"
+    " kept in other copit registries are welcome in this table once they pass the"
+    " suite: open an issue with the registry's link.",
+]
+with mkdocs_gen_files.open("providers/index.md", "w") as handle:
+    handle.write("\n".join(provider_rows) + "\n")
+nav_lines.append("* [Providers](providers/index.md)")
+nav_lines += [f"    * [{COMPONENTS[n]['title']}](kits/{n}.md)" for n in PROVIDERS]
 
 
 # --- UI kit pages ---------------------------------------------------------------
@@ -315,8 +496,16 @@ def ui_page(name: str, component: dict[str, Any]) -> str:
         f'!!! info "UI · v{component["version"]}"',
         f"    {component['description']}",
         "",
+        *foundation_note(name, component, UI_REQUIRED_BY),
     ]
-    return "\n".join(["\n".join(header), "\n".join(facts), "", rewrite_links(body)])
+    return "\n".join(
+        [
+            page_tags(component, ui=True) + "\n".join(header),
+            "\n".join(facts),
+            "",
+            rewrite_links(body),
+        ]
+    )
 
 
 ui_index = [
@@ -348,14 +537,20 @@ for name in sorted(UI_COMPONENTS):
 with mkdocs_gen_files.open("ui/index.md", "w") as handle:
     handle.write("\n".join(ui_index) + "\n")
 
-nav_lines.append("* [UI kits](ui/index.md)")
 for name in sorted(UI_COMPONENTS):
     with mkdocs_gen_files.open(f"ui/{name}.md", "w") as handle:
         handle.write(ui_page(name, UI_COMPONENTS[name]))
     mkdocs_gen_files.set_edit_path(
         f"ui/{name}.md", f"{UI_COMPONENTS[name]['path']}/README.md"
     )
-    nav_lines.append(f"    * [{UI_COMPONENTS[name]['title']}](ui/{name}.md)")
+nav_lines.append("* [UI kits](ui/index.md)")
+nav_lines += nav_groups(UI_COMPONENTS, "ui/")
+
+with mkdocs_gen_files.open("tags.md", "w") as handle:
+    handle.write(
+        "# Tags\n\nEvery kit page by area, role, side and contract.\n\n<!-- material/tags -->\n"
+    )
+nav_lines.append("* [Tags](tags.md)")
 
 # --- contributing page ----------------------------------------------------------
 # Rendered from the repository's own CONTRIBUTING.md so the two cannot disagree. Its
