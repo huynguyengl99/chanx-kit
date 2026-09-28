@@ -1,6 +1,6 @@
 """Send a notification from another process. Needs the server's REDIS_URL.
 
-REDIS_URL=redis://localhost:6399/0 uv run python -m app.notify --user ana "Hi"
+REDIS_URL=redis://localhost:6399/0 uv run python -m app.notify --user chris "Hi"
 """
 
 import argparse

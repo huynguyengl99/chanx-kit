@@ -7,7 +7,7 @@ import { notifications } from '@/generated';
 const everyone = notifications.topics.broadcastNotificationTopic.with();
 
 export function App() {
-  const [who, setWho] = useState('ana');
+  const [who, setWho] = useState('chris');
 
   // One socket, two topics; the server authorizes each subscription.
   const mine = notifications.topics.appUserNotificationTopic.with({ user_id: who });

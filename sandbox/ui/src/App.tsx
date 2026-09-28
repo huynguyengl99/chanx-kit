@@ -30,7 +30,7 @@ function useProviders(): Providers | null {
 }
 
 export function App() {
-  const [who, setWho] = useState('ana');
+  const [who, setWho] = useState('chris');
   const id = useDemoId();
   const providers = useProviders() ?? { stt: 'fake-voice', tts: 'fake-voice' };
   const demo = DEMOS.find((candidate) => candidate.id === id) ?? DEMOS[0];

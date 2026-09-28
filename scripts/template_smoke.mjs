@@ -51,12 +51,12 @@ async function notify(body) {
 }
 
 const client = createClient({ baseUrl: base.replace(/^http/, 'ws') });
-const mine = notifications.topics.user.with({ user_id: 'ana' });
+const mine = notifications.topics.user.with({ user_id: 'chris' });
 const everyone = notifications.topics.all.with();
 const theirs = notifications.topics.user.with({ user_id: 'bob' });
 
 const controller = createTopicsController(client, notifications, {
-  queryParams: { as: 'ana' },
+  queryParams: { as: 'chris' },
   topics: [mine, everyone, theirs],
   buffer: 'none',
   on: {
@@ -78,8 +78,8 @@ try {
   await notify({ title: 'to everyone' });
   await waitFor('the broadcast', () => received.some((n) => n.topic === everyone.topic));
 
-  await notify({ title: 'to ana', user: 'ana' });
-  await waitFor("ana's notification", () => received.some((n) => n.topic === mine.topic));
+  await notify({ title: 'to chris', user: 'chris' });
+  await waitFor("chris's notification", () => received.some((n) => n.topic === mine.topic));
 
   const id = received.find((n) => n.topic === mine.topic).id;
   controller.sendTopic(mine.topic, { action: 'notification_ack', payload: { ids: [id] } });
